@@ -138,6 +138,12 @@
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+.settings-number::-webkit-inner-spin-button,
+.settings-number::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Select */
 .settings-select {
   background: var(--surface);

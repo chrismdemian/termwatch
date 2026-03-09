@@ -1,8 +1,11 @@
-const { app, BaseWindow, WebContentsView, session, components } = require('electron');
+const { app, BaseWindow, WebContentsView, session, components, nativeTheme } = require('electron');
 const path = require('path');
 const store = require('./store');
 const ipcHandlers = require('./ipc-handlers');
 const ptyManager = require('./pty-manager');
+
+// Force dark theme for native Chromium UI (color picker, input spinners, etc.)
+nativeTheme.themeSource = 'dark';
 
 // Handle DRM initialization (Castlabs Electron fork)
 async function initDRM() {
