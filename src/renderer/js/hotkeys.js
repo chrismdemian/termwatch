@@ -151,7 +151,7 @@ class Hotkeys {
 
   _setupFullscreen() {
     // Use stored preference for initial UI (avoids flicker — live query returns
-    // false before main process calls setFullScreen in did-finish-load)
+    // false before main process calls enterFullscreen in did-finish-load)
     window.storeAPI.get('isFullscreen').then((isFs) => {
       this._applyFullscreenUI(!!isFs);
     });

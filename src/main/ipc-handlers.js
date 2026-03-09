@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron');
+const { ipcMain, screen } = require('electron');
 const ptyManager = require('./pty-manager');
 const store = require('./store');
 
@@ -7,6 +7,55 @@ let appView = null;
 let baseWindow = null;
 let videoModeActive = false;
 let overlayCssKey = null; // key from webContents.insertCSS, used for removal
+
+// --- Manual fullscreen simulation ---
+// BaseWindow.setFullScreen() silently fails on transparent frameless windows on Windows.
+// We simulate fullscreen by saving bounds and resizing to cover the full display.
+let manualFullscreen = false;
+let savedBounds = null;
+
+function enterFullscreen() {
+  if (manualFullscreen || !baseWindow || baseWindow.isDestroyed()) return;
+  // Save current bounds for restore
+  savedBounds = baseWindow.getBounds();
+  const center = { x: savedBounds.x + savedBounds.width / 2, y: savedBounds.y + savedBounds.height / 2 };
+  const display = screen.getDisplayNearestPoint(center);
+  manualFullscreen = true;
+  baseWindow.setBounds(display.bounds);
+  store.set('isFullscreen', true);
+  notifyFullscreenChanged(true);
+}
+
+function leaveFullscreen() {
+  if (!manualFullscreen || !baseWindow || baseWindow.isDestroyed()) return;
+  manualFullscreen = false;
+  if (savedBounds) {
+    baseWindow.setBounds(savedBounds);
+    savedBounds = null;
+  }
+  store.set('isFullscreen', false);
+  notifyFullscreenChanged(false);
+}
+
+function toggleFullscreen() {
+  if (manualFullscreen) {
+    leaveFullscreen();
+  } else {
+    enterFullscreen();
+  }
+}
+
+function isFullscreen() {
+  return manualFullscreen;
+}
+
+function notifyFullscreenChanged(isFs) {
+  try {
+    if (appView && !appView.webContents.isDestroyed()) {
+      appView.webContents.send('window:fullscreen-changed', isFs);
+    }
+  } catch (e) { /* disposed during shutdown */ }
+}
 
 // Overlay CSS injected via webContents.insertCSS to bypass Trusted Types CSP
 const OVERLAY_CSS = `
@@ -416,12 +465,13 @@ function register() {
   });
 
   ipcMain.on('window:maximize', () => {
-    if (baseWindow) {
-      if (baseWindow.isMaximized()) {
-        baseWindow.unmaximize();
-      } else {
-        baseWindow.maximize();
-      }
+    if (!baseWindow) return;
+    // Exit manual fullscreen first to avoid conflicting window geometry
+    if (manualFullscreen) leaveFullscreen();
+    if (baseWindow.isMaximized()) {
+      baseWindow.unmaximize();
+    } else {
+      baseWindow.maximize();
     }
   });
 
@@ -434,15 +484,11 @@ function register() {
   });
 
   ipcMain.on('window:toggle-fullscreen', () => {
-    if (baseWindow) {
-      const newState = !baseWindow.isFullScreen();
-      baseWindow.setFullScreen(newState);
-      store.set('isFullscreen', newState);
-    }
+    toggleFullscreen();
   });
 
   ipcMain.handle('window:is-fullscreen', () => {
-    return baseWindow ? baseWindow.isFullScreen() : false;
+    return manualFullscreen;
   });
 
   ipcMain.on('window:move-by', (e, dx, dy) => {
@@ -506,4 +552,4 @@ function cleanup() {
   activeFrameId = null;
 }
 
-module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup };
+module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup, enterFullscreen, leaveFullscreen, toggleFullscreen, isFullscreen };
