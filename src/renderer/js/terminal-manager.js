@@ -9,7 +9,7 @@ class TerminalManager {
     this.focusedId = null;
     this._dataCleanup = null;
     this._exitCleanup = null;
-    this._opacity = 0.5;
+    this._opacity = 0.3;
     this._shadowIntensity = 1.0;
     this._terminalDefaults = {
       fontSize: 14,

@@ -9,7 +9,7 @@ class Settings {
     this._pickrs = {};
 
     this._values = {
-      opacity: 0.5,
+      opacity: 0.3,
       shadowIntensity: 1.0,
       terminalFontSize: 14,
       terminalFontFamily: "'JetBrains Mono', monospace",
@@ -126,10 +126,12 @@ class Settings {
 
     // Opacity
     const opacitySlider = document.getElementById('setting-opacity');
+    const opacityValueLabel = document.getElementById('setting-opacity-value');
     opacitySlider.addEventListener('input', () => {
       const val = parseFloat(opacitySlider.value);
       this._values.opacity = val;
       this._applyOpacity(val);
+      opacityValueLabel.textContent = Math.round(val * 100) + '%';
       window.storeAPI.set('opacity', val);
     });
 
@@ -270,6 +272,7 @@ class Settings {
 
     // Sync inputs to current values
     document.getElementById('setting-opacity').value = this._values.opacity;
+    document.getElementById('setting-opacity-value').textContent = Math.round(this._values.opacity * 100) + '%';
     document.getElementById('setting-shadow-intensity').value = this._values.shadowIntensity;
     document.getElementById('setting-font-size').value = this._values.terminalFontSize;
     document.getElementById('setting-font-family').value = this._values.terminalFontFamily;
