@@ -238,6 +238,11 @@ class Settings {
       window.storeAPI.set('terminalScrollback', val);
     });
 
+    // Refresh terminals
+    document.getElementById('setting-refresh-terminals').addEventListener('click', () => {
+      this.terminalManager.restartAll();
+    });
+
     // --- Behavior Settings ---
 
     // Auto-hide delay

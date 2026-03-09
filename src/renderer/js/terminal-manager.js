@@ -96,21 +96,6 @@ class TerminalManager {
     }
     console.log('[TermWatch] PTY created. ID:', result.id);
 
-    // Terminal input -> PTY
-    terminal.onData((data) => {
-      window.terminalAPI.writePty(result.id, data);
-    });
-
-    // Resize
-    terminal.onResize(({ cols, rows }) => {
-      window.terminalAPI.resizePty(result.id, cols, rows);
-    });
-
-    // Focus tracking
-    terminal.onFocus = terminal.textarea?.addEventListener('focus', () => {
-      this._setFocused(panelId);
-    });
-
     const entry = {
       terminal,
       fitAddon,
@@ -119,6 +104,21 @@ class TerminalManager {
       panelId,
     };
     this.terminals.set(panelId, entry);
+
+    // Terminal input -> PTY (use entry.ptyId so restartPty updates are picked up)
+    terminal.onData((data) => {
+      window.terminalAPI.writePty(entry.ptyId, data);
+    });
+
+    // Resize
+    terminal.onResize(({ cols, rows }) => {
+      window.terminalAPI.resizePty(entry.ptyId, cols, rows);
+    });
+
+    // Focus tracking
+    terminal.onFocus = terminal.textarea?.addEventListener('focus', () => {
+      this._setFocused(panelId);
+    });
 
     // ResizeObserver for auto-fit
     const ro = new ResizeObserver(() => {
@@ -302,6 +302,12 @@ class TerminalManager {
     });
 
     panel.appendChild(overlay);
+  }
+
+  restartAll() {
+    for (const panelId of this.terminals.keys()) {
+      this.restartPty(panelId);
+    }
   }
 
   async restartPty(panelId) {

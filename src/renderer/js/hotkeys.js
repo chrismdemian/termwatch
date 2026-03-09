@@ -88,6 +88,10 @@ class Hotkeys {
             e.preventDefault();
             this.bookmarks.toggle();
             break;
+          case 'KeyR':
+            e.preventDefault();
+            this.terminalManager.restartAll();
+            break;
           case 'KeyL':
             e.preventDefault();
             const next = this.layoutManager.cycleLayout();
