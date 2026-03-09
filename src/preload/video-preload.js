@@ -1,5 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// --- Frame identity ---
+const isMainFrame = process.isMainFrame;
+const frameId = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+
 // --- Video element detection and control ---
 let currentVideo = null;
 
@@ -11,15 +15,28 @@ function attachVideoListeners(video) {
   if (currentVideo === video) return;
   currentVideo = video;
 
+  // Register this frame as having a video
+  ipcRenderer.send('video:frame-register', { frameId });
+
   const sendState = () => {
     if (!currentVideo) return;
-    ipcRenderer.send('video:state', {
+    const state = {
       currentTime: currentVideo.currentTime,
       duration: currentVideo.duration || 0,
       paused: currentVideo.paused,
       volume: currentVideo.volume,
       muted: currentVideo.muted,
-    });
+      frameId,
+    };
+    ipcRenderer.send('video:state', state);
+
+    // Update frame metadata when duration becomes available
+    if (currentVideo.duration && isFinite(currentVideo.duration)) {
+      ipcRenderer.send('video:frame-update', {
+        frameId,
+        duration: currentVideo.duration,
+      });
+    }
   };
 
   video.addEventListener('timeupdate', sendState);
@@ -48,7 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Deregister frame on unload
+window.addEventListener('beforeunload', () => {
+  ipcRenderer.send('video:frame-deregister', { frameId });
+});
+
 // --- IPC listeners for playback control ---
+// Commands arrive via frame.send() targeted to this specific frame
 ipcRenderer.on('video:play', () => {
   const v = findVideo();
   if (v) v.play();
@@ -89,12 +112,14 @@ ipcRenderer.on('video:seek-relative', (e, delta) => {
   }
 });
 
-// --- Video mode exit overlay ---
+// --- Video mode exit overlay (main frame only) ---
 let videoModeOverlay = null;
 let videoModeStyle = null;
 let videoModeActive = false;
 
 function createVideoModeOverlay() {
+  if (!isMainFrame) return;
+
   // Clean up any stale references first
   removeVideoModeOverlay();
 
@@ -187,7 +212,9 @@ function removeVideoModeOverlay() {
   }
 }
 
+// Overlay show/hide — main frame only
 ipcRenderer.on('video:show-exit-overlay', () => {
+  if (!isMainFrame) return;
   videoModeActive = true;
   if (document.body) {
     createVideoModeOverlay();
@@ -197,20 +224,21 @@ ipcRenderer.on('video:show-exit-overlay', () => {
 });
 
 ipcRenderer.on('video:hide-exit-overlay', () => {
+  if (!isMainFrame) return;
   videoModeActive = false;
   removeVideoModeOverlay();
 });
 
 // Re-inject overlay after page navigation if still in video mode
 document.addEventListener('DOMContentLoaded', () => {
-  if (videoModeActive) {
+  if (videoModeActive && isMainFrame) {
     createVideoModeOverlay();
   }
 });
 
-// Ctrl+Shift+V or Escape to exit video mode
+// Ctrl+Shift+V or Escape to exit video mode (main frame only)
 document.addEventListener('keydown', (e) => {
-  if (!videoModeActive) return;
+  if (!videoModeActive || !isMainFrame) return;
   if (e.ctrlKey && e.shiftKey && e.code === 'KeyV') {
     e.preventDefault();
     ipcRenderer.send('video:exit-video-mode');
@@ -220,7 +248,9 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Expose navigation API
-contextBridge.exposeInMainWorld('videoAPI', {
-  getUrl: () => window.location.href,
-});
+// Expose navigation API (main frame only — prevents iframe page JS from accessing it)
+if (isMainFrame) {
+  contextBridge.exposeInMainWorld('videoAPI', {
+    getUrl: () => window.location.href,
+  });
+}

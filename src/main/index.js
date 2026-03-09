@@ -1,4 +1,4 @@
-const { app, BaseWindow, WebContentsView, globalShortcut, session } = require('electron');
+const { app, BaseWindow, WebContentsView, session, components } = require('electron');
 const path = require('path');
 const store = require('./store');
 const ipcHandlers = require('./ipc-handlers');
@@ -7,9 +7,9 @@ const ptyManager = require('./pty-manager');
 // Handle DRM initialization (Castlabs Electron fork)
 async function initDRM() {
   try {
-    if (app.components) {
-      await app.components.whenReady();
-      console.log('DRM components ready');
+    if (components && components.whenReady) {
+      await components.whenReady();
+      console.log('DRM components ready:', components.status());
     }
   } catch (e) {
     console.log('DRM not available (standard Electron):', e.message);
@@ -42,6 +42,7 @@ function createWindow() {
       preload: path.join(__dirname, '..', 'preload', 'video-preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      nodeIntegrationInSubFrames: true,
       sandbox: false,
       partition: 'persist:video',
     },
@@ -84,6 +85,7 @@ function createWindow() {
 
   // Handle video view navigation events
   videoView.webContents.on('did-navigate', (e, url) => {
+    ipcHandlers.clearVideoFrames();
     if (appView && !appView.webContents.isDestroyed()) {
       appView.webContents.send('video:url-updated', url);
     }
@@ -213,5 +215,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  ipcHandlers.cleanup();
   ptyManager.destroyAll();
 });

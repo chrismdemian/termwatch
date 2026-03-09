@@ -2,6 +2,12 @@ appId: com.termwatch.app
 productName: TermWatch
 copyright: Copyright © 2026 TermWatch
 
+# VMP signing for Castlabs ECS (Widevine DRM)
+# macOS: sign BEFORE Apple code-signing
+afterPack: build/vmp-sign.js
+# Windows: sign AFTER Windows code-signing
+afterSign: build/vmp-sign.js
+
 directories:
   output: dist
 
