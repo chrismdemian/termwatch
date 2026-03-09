@@ -71,12 +71,6 @@ class TerminalManager {
     terminal.open(container);
     console.log('[TermWatch] Terminal opened in container. Container size:', container.offsetWidth, 'x', container.offsetHeight);
 
-    // Let global hotkeys pass through xterm (F11 for fullscreen, etc.)
-    terminal.attachCustomKeyEventHandler((e) => {
-      if (e.key === 'F11') return false;
-      return true;
-    });
-
     // Load canvas addon after opening
     try {
       terminal.loadAddon(new CanvasAddon());

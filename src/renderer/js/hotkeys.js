@@ -75,11 +75,6 @@ class Hotkeys {
         }
       }
 
-      if (e.key === 'F11') {
-        e.preventDefault();
-        window.windowAPI.toggleFullscreen();
-      }
-
       if (e.key === 'Escape') {
         if (this.theaterMode) {
           this._toggleTheaterMode();

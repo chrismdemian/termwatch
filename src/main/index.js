@@ -144,6 +144,16 @@ function createWindow() {
     } catch (e) { /* disposed during shutdown */ }
   });
 
+  // Catch F11 before renderer/xterm processes it
+  appView.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F11' && input.type === 'keyDown') {
+      event.preventDefault();
+      const newState = !baseWindow.isFullScreen();
+      baseWindow.setFullScreen(newState);
+      store.set('isFullscreen', newState);
+    }
+  });
+
   // Show when ready (fullscreen before show if preferred)
   appView.webContents.once('did-finish-load', () => {
     if (store.get('isFullscreen')) {
