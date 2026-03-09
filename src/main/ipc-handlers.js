@@ -6,6 +6,7 @@ let videoView = null;
 let appView = null;
 let baseWindow = null;
 let videoModeActive = false;
+let overlayCssKey = null; // key from webContents.insertCSS, used for removal
 
 // Overlay CSS injected via webContents.insertCSS to bypass Trusted Types CSP
 const OVERLAY_CSS = `
@@ -232,7 +233,9 @@ function setupVideoModeKeyboard() {
 
   // Re-inject exit overlay after page navigation while in video mode.
   // The preload re-initializes on navigation, losing videoModeActive state.
+  // Old insertCSS key is invalid after navigation — clear it so fresh CSS is injected.
   videoView.webContents.on('did-finish-load', () => {
+    overlayCssKey = null;
     if (videoModeActive && !videoView.webContents.isDestroyed()) {
       videoView.webContents.send('video:show-exit-overlay');
     }
@@ -390,7 +393,13 @@ function register() {
   // Inject overlay CSS via webContents.insertCSS (bypasses Trusted Types CSP)
   ipcMain.on('video:inject-overlay-css', () => {
     if (!videoView || videoView.webContents.isDestroyed()) return;
-    videoView.webContents.insertCSS(OVERLAY_CSS).catch(() => {});
+    // Remove previous injection if any (prevents accumulation across toggles/navigations)
+    if (overlayCssKey) {
+      videoView.webContents.removeInsertedCSS(overlayCssKey).catch(() => {});
+    }
+    videoView.webContents.insertCSS(OVERLAY_CSS)
+      .then(key => { overlayCssKey = key; })
+      .catch(() => {});
   });
 
   // Exit video mode — called from video preload's exit button/keyboard, or from main process
