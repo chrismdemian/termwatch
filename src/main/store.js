@@ -5,7 +5,7 @@ const store = new Store({
     windowBounds: { x: undefined, y: undefined, width: 1280, height: 800 },
     layout: '1x1',
     customPanelSizes: null,
-    opacity: 0.5,
+    opacity: 0.3,
     shadowIntensity: 1.0,
     bookmarks: [],
     lastVideoUrl: '',

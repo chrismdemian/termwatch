@@ -9,7 +9,7 @@ class Settings {
     this._pickrs = {};
 
     this._values = {
-      opacity: 0.5,
+      opacity: 0.3,
       shadowIntensity: 1.0,
       terminalFontSize: 14,
       terminalFontFamily: "'JetBrains Mono', monospace",
