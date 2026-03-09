@@ -221,8 +221,22 @@
 }
 
 /* Slider in Settings */
+.settings-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .settings-slider {
   width: 140px;
+}
+
+.settings-slider-value {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  color: var(--text-secondary);
+  min-width: 32px;
+  text-align: right;
 }
 
 /* Color Input */
