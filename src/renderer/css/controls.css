@@ -193,3 +193,16 @@ input[type="range"]:active::-webkit-slider-thumb {
   background: var(--bg-deep);
   color: var(--text-primary);
 }
+
+/* Fullscreen window controls in controls bar */
+.fullscreen-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctrl-btn-close:hover {
+  background: var(--danger);
+  color: white;
+  border-color: transparent;
+}

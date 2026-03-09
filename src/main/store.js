@@ -10,6 +10,7 @@ const store = new Store({
     lastVideoUrl: '',
     subtitleZoneHeight: 15,
     terminalFontSize: 14,
+    isFullscreen: true,
   },
 });
 

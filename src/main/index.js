@@ -102,13 +102,20 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // Handle fullscreen for video
+  // Handle fullscreen for video (decouple from app fullscreen)
+  let videoTriggeredFullscreen = false;
   videoView.webContents.on('enter-html-full-screen', () => {
-    baseWindow.setFullScreen(true);
+    if (!baseWindow.isFullScreen()) {
+      videoTriggeredFullscreen = true;
+      baseWindow.setFullScreen(true);
+    }
     updateViewBounds();
   });
   videoView.webContents.on('leave-html-full-screen', () => {
-    baseWindow.setFullScreen(false);
+    if (videoTriggeredFullscreen) {
+      videoTriggeredFullscreen = false;
+      baseWindow.setFullScreen(false);
+    }
     updateViewBounds();
   });
 
@@ -121,8 +128,27 @@ function createWindow() {
     saveBoundsDebounced();
   });
 
-  // Show when ready
+  // Forward fullscreen state to renderer
+  baseWindow.on('enter-full-screen', () => {
+    try {
+      if (appView && !appView.webContents.isDestroyed()) {
+        appView.webContents.send('window:fullscreen-changed', true);
+      }
+    } catch (e) { /* disposed during shutdown */ }
+  });
+  baseWindow.on('leave-full-screen', () => {
+    try {
+      if (appView && !appView.webContents.isDestroyed()) {
+        appView.webContents.send('window:fullscreen-changed', false);
+      }
+    } catch (e) { /* disposed during shutdown */ }
+  });
+
+  // Show when ready (fullscreen before show if preferred)
   appView.webContents.once('did-finish-load', () => {
+    if (store.get('isFullscreen')) {
+      baseWindow.setFullScreen(true);
+    }
     baseWindow.show();
   });
 
@@ -190,7 +216,7 @@ let boundsTimeout = null;
 function saveBoundsDebounced() {
   if (boundsTimeout) clearTimeout(boundsTimeout);
   boundsTimeout = setTimeout(() => {
-    if (baseWindow && !baseWindow.isDestroyed()) {
+    if (baseWindow && !baseWindow.isDestroyed() && !baseWindow.isFullScreen()) {
       const bounds = baseWindow.getBounds();
       store.set('windowBounds', bounds);
     }

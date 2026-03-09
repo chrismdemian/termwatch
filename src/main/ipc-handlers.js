@@ -135,6 +135,18 @@ function register() {
     return baseWindow ? baseWindow.isMaximized() : false;
   });
 
+  ipcMain.on('window:toggle-fullscreen', () => {
+    if (baseWindow) {
+      const newState = !baseWindow.isFullScreen();
+      baseWindow.setFullScreen(newState);
+      store.set('isFullscreen', newState);
+    }
+  });
+
+  ipcMain.handle('window:is-fullscreen', () => {
+    return baseWindow ? baseWindow.isFullScreen() : false;
+  });
+
   ipcMain.on('window:move-by', (e, dx, dy) => {
     if (!baseWindow || baseWindow.isDestroyed()) return;
     if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;

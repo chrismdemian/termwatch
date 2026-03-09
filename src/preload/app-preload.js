@@ -60,6 +60,13 @@ window.windowAPI = {
     ipcRenderer.on('video:mode-exited', handler);
     return () => ipcRenderer.removeListener('video:mode-exited', handler);
   },
+  toggleFullscreen: () => ipcRenderer.send('window:toggle-fullscreen'),
+  isFullscreen: () => ipcRenderer.invoke('window:is-fullscreen'),
+  onFullscreenChanged: (callback) => {
+    const handler = (e, val) => callback(val);
+    ipcRenderer.on('window:fullscreen-changed', handler);
+    return () => ipcRenderer.removeListener('window:fullscreen-changed', handler);
+  },
 };
 
 window.storeAPI = {
