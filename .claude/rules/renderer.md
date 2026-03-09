@@ -39,7 +39,7 @@ All JS modules are in `src/renderer/js/` and loaded from `app.js` (the entry poi
 - Animations: purposeful and quick, never bouncy or decorative
 - Easing: `cubic-bezier(0.16, 1, 0.3, 1)` — quick deceleration, feels snappy
 - No bold in UI text except headings
-- Panel gaps: 4px (tight, maximizes terminal space)
+- Panel gaps: none (flush panels, borders + border-radius provide separation)
 
 ## Adding a New UI Component
 

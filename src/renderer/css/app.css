@@ -103,8 +103,8 @@ html, body {
   right: 0;
   bottom: 48px;
   display: grid;
-  gap: 4px;
-  padding: 0 4px 4px;
+  gap: 0;
+  padding: 0;
   transition: opacity var(--duration-slow) var(--easing),
               top var(--duration-normal) var(--easing);
 }
