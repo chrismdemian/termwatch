@@ -320,6 +320,8 @@ class Settings {
     val = Math.max(0, Math.min(1, val));
     this._values.opacity = val;
     this._applyOpacity(val);
+    document.getElementById('setting-opacity').value = val;
+    document.getElementById('setting-opacity-value').textContent = Math.round(val * 100) + '%';
     window.storeAPI.set('opacity', val);
   }
 
