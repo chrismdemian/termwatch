@@ -123,6 +123,18 @@ class Controls {
       this._startAutoHide();
     });
 
+    // Bookmarks bar also prevents auto-hide when hovered
+    const bookmarksBar = document.getElementById('bookmarks-bar');
+    bookmarksBar.addEventListener('mouseenter', () => {
+      this._mouseOverControls = true;
+      this._cancelAutoHide();
+      controlsBar.classList.remove('auto-hidden');
+    });
+    bookmarksBar.addEventListener('mouseleave', () => {
+      this._mouseOverControls = false;
+      this._startAutoHide();
+    });
+
     // Reveal controls when mouse approaches the bottom edge
     this._inRevealZone = false;
     document.addEventListener('mousemove', (e) => {
