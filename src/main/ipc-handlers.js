@@ -5,6 +5,7 @@ const store = require('./store');
 let videoView = null;
 let appView = null;
 let baseWindow = null;
+let videoModeActive = false;
 
 // --- Frame coordinator state ---
 // Tracks which frames have <video> elements, selects the "real" content frame
@@ -79,6 +80,79 @@ function sendToActiveFrame(channel, data) {
     selectActiveFrame();
     return false;
   }
+}
+
+/**
+ * Exit video mode from anywhere — main process failsafe.
+ * Safe to call even if not in video mode.
+ */
+function exitVideoMode() {
+  if (!appView || !videoView) return;
+  if (!videoModeActive) return;
+  videoModeActive = false;
+  if (!videoView.webContents.isDestroyed()) {
+    videoView.webContents.send('video:hide-exit-overlay');
+  }
+  appView.setVisible(true);
+  if (!appView.webContents.isDestroyed()) {
+    try {
+      appView.webContents.send('video:mode-exited');
+    } catch (e) {
+      // View disposed during shutdown
+    }
+  }
+}
+
+/**
+ * Set up main-process keyboard handling for video mode.
+ * Uses before-input-event on the video view's webContents — fires before the
+ * page gets the event, so it works regardless of preload state or page navigation.
+ */
+function setupVideoModeKeyboard() {
+  if (!videoView) return;
+  videoView.webContents.on('before-input-event', (event, input) => {
+    if (!videoModeActive) return;
+    if (input.type !== 'keyDown') return;
+
+    // Ctrl+Shift+V → exit video mode
+    if (input.control && input.shift && input.key.toLowerCase() === 'v') {
+      event.preventDefault();
+      exitVideoMode();
+      return;
+    }
+
+    // Escape → exit video mode (don't preventDefault — let the page also handle it)
+    if (input.key === 'Escape') {
+      exitVideoMode();
+      return;
+    }
+
+    // Alt+Left → go back (browser-like navigation)
+    if (input.alt && input.key === 'ArrowLeft') {
+      event.preventDefault();
+      if (videoView.webContents.canGoBack()) {
+        videoView.webContents.goBack();
+      }
+      return;
+    }
+
+    // Alt+Right → go forward
+    if (input.alt && input.key === 'ArrowRight') {
+      event.preventDefault();
+      if (videoView.webContents.canGoForward()) {
+        videoView.webContents.goForward();
+      }
+      return;
+    }
+  });
+
+  // Re-inject exit overlay after page navigation while in video mode.
+  // The preload re-initializes on navigation, losing videoModeActive state.
+  videoView.webContents.on('did-finish-load', () => {
+    if (videoModeActive && !videoView.webContents.isDestroyed()) {
+      videoView.webContents.send('video:show-exit-overlay');
+    }
+  });
 }
 
 function register() {
@@ -214,6 +288,7 @@ function register() {
   // --- Video mode toggle ---
   ipcMain.on('toggle-video-mode', (e, enabled) => {
     if (!appView || !videoView) return;
+    videoModeActive = enabled;
     if (enabled) {
       appView.setVisible(false);
       // Send overlay show to main frame via webContents.send (main frame only)
@@ -228,20 +303,9 @@ function register() {
     }
   });
 
-  // Exit video mode from the video view's exit button
+  // Exit video mode — called from video preload's exit button/keyboard, or from main process
   ipcMain.on('video:exit-video-mode', () => {
-    if (!appView || !videoView) return;
-    if (!videoView.webContents.isDestroyed()) {
-      videoView.webContents.send('video:hide-exit-overlay');
-    }
-    appView.setVisible(true);
-    if (!appView.webContents.isDestroyed()) {
-      try {
-        appView.webContents.send('video:mode-exited');
-      } catch (e) {
-        // View disposed during shutdown
-      }
-    }
+    exitVideoMode();
   });
 
   // --- Window controls ---
@@ -328,4 +392,4 @@ function cleanup() {
   activeFrameId = null;
 }
 
-module.exports = { register, setViews, clearVideoFrames, cleanup };
+module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup };

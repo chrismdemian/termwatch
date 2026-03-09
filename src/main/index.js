@@ -69,6 +69,7 @@ function createWindow() {
   // Register IPC handlers
   ipcHandlers.setViews(videoView, appView, baseWindow);
   ipcHandlers.register();
+  ipcHandlers.setupVideoModeKeyboard();
 
   // Load content
   const lastUrl = store.get('lastVideoUrl');

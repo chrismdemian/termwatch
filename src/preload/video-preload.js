@@ -126,7 +126,7 @@ function createVideoModeOverlay() {
   videoModeOverlay = document.createElement('div');
   videoModeOverlay.id = 'termwatch-video-mode-overlay';
   videoModeOverlay.innerHTML = `
-    <div id="termwatch-vm-toast">Press <kbd>Esc</kbd> or <kbd>Ctrl+Shift+V</kbd> to return to terminals</div>
+    <div id="termwatch-vm-toast">Press <kbd>Esc</kbd> to return to terminals · <kbd>Alt+←</kbd> to go back</div>
     <button id="termwatch-vm-exit" title="Return to terminals">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="2" y="3" width="20" height="14" rx="2"/>
