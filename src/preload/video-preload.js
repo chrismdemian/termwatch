@@ -114,7 +114,6 @@ ipcRenderer.on('video:seek-relative', (e, delta) => {
 
 // --- Video mode overlay with auto-hiding controls (main frame only) ---
 let videoModeOverlay = null;
-let videoModeStyle = null;
 let videoModeActive = false;
 let mouseIdleTimer = null;
 let mouseMoveHandler = null;
@@ -135,138 +134,90 @@ function resetIdleTimer() {
   mouseIdleTimer = setTimeout(hideControls, 2500);
 }
 
+// Helper: create an SVG element with attributes and children (bypasses Trusted Types)
+function createSvg(width, height, viewBox, attrs, children) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('width', String(width));
+  svg.setAttribute('height', String(height));
+  svg.setAttribute('viewBox', viewBox);
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  for (const [k, v] of Object.entries(attrs || {})) svg.setAttribute(k, v);
+  for (const child of children) {
+    const el = document.createElementNS(ns, child.tag);
+    for (const [k, v] of Object.entries(child.attrs || {})) el.setAttribute(k, v);
+    svg.appendChild(el);
+  }
+  return svg;
+}
+
 function createVideoModeOverlay() {
   if (!isMainFrame) return;
 
   // Clean up any stale references first
   removeVideoModeOverlay();
 
+  // Build all elements with createElement (no innerHTML — Trusted Types CSP blocks it)
   videoModeOverlay = document.createElement('div');
   videoModeOverlay.id = 'termwatch-video-mode-overlay';
-  videoModeOverlay.innerHTML = `
-    <div id="termwatch-vm-toast">Press <kbd>Esc</kbd> to return to terminals</div>
-    <button id="termwatch-vm-back" class="termwatch-vm-nav" title="Go back (Alt+←)">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"/>
-      </svg>
-    </button>
-    <button id="termwatch-vm-forward" class="termwatch-vm-nav" title="Go forward (Alt+→)">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
-    <button id="termwatch-vm-exit" class="termwatch-vm-control" title="Return to terminals (Esc)">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="2" y="3" width="20" height="14" rx="2"/>
-        <line x1="8" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="17" x2="12" y2="21"/>
-      </svg>
-    </button>
-  `;
 
-  videoModeStyle = document.createElement('style');
-  videoModeStyle.textContent = `
-    #termwatch-vm-toast {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(12, 12, 20, 0.85);
-      color: #e8e6e3;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-family: -apple-system, system-ui, sans-serif;
-      font-size: 14px;
-      z-index: 2147483647;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      animation: termwatch-fade 4s ease-out forwards;
-      pointer-events: none;
-    }
-    #termwatch-vm-toast kbd {
-      background: #1a1a2e;
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
-      font-size: 12px;
-    }
-    @keyframes termwatch-fade {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
-      10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      70% { opacity: 1; }
-      100% { opacity: 0; }
-    }
+  // Toast
+  const toast = document.createElement('div');
+  toast.id = 'termwatch-vm-toast';
+  toast.appendChild(document.createTextNode('Press '));
+  const kbd = document.createElement('kbd');
+  kbd.textContent = 'Esc';
+  toast.appendChild(kbd);
+  toast.appendChild(document.createTextNode(' to return to terminals'));
+  videoModeOverlay.appendChild(toast);
 
-    /* --- Auto-hiding controls --- */
-    .termwatch-vm-nav,
-    .termwatch-vm-control {
-      position: fixed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(12, 12, 20, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: rgba(255, 255, 255, 0.5);
-      cursor: pointer;
-      z-index: 2147483647;
-      opacity: 0;
-      transition: opacity 0.2s ease, background 0.15s, color 0.15s, border-color 0.15s;
-      pointer-events: none;
-    }
-    .termwatch-vm-visible .termwatch-vm-nav,
-    .termwatch-vm-visible .termwatch-vm-control {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .termwatch-vm-nav:hover,
-    .termwatch-vm-control:hover {
-      background: rgba(12, 12, 20, 0.9);
-      color: #d4915e;
-      border-color: rgba(212, 145, 94, 0.4);
-    }
+  // Back button
+  const backBtn = document.createElement('button');
+  backBtn.id = 'termwatch-vm-back';
+  backBtn.className = 'termwatch-vm-nav';
+  backBtn.title = 'Go back (Alt+\u2190)';
+  backBtn.appendChild(createSvg(24, 24, '0 0 24 24',
+    { 'stroke-linecap': 'round', 'stroke-linejoin': 'round' },
+    [{ tag: 'polyline', attrs: { points: '15 18 9 12 15 6' } }]
+  ));
+  videoModeOverlay.appendChild(backBtn);
 
-    /* Back arrow — left edge, vertically centered */
-    #termwatch-vm-back {
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 40px;
-      height: 56px;
-    }
+  // Forward button
+  const fwdBtn = document.createElement('button');
+  fwdBtn.id = 'termwatch-vm-forward';
+  fwdBtn.className = 'termwatch-vm-nav';
+  fwdBtn.title = 'Go forward (Alt+\u2192)';
+  fwdBtn.appendChild(createSvg(24, 24, '0 0 24 24',
+    { 'stroke-linecap': 'round', 'stroke-linejoin': 'round' },
+    [{ tag: 'polyline', attrs: { points: '9 18 15 12 9 6' } }]
+  ));
+  videoModeOverlay.appendChild(fwdBtn);
 
-    /* Forward arrow — right edge, vertically centered */
-    #termwatch-vm-forward {
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 40px;
-      height: 56px;
-    }
+  // Exit button
+  const exitBtn = document.createElement('button');
+  exitBtn.id = 'termwatch-vm-exit';
+  exitBtn.className = 'termwatch-vm-control';
+  exitBtn.title = 'Return to terminals (Esc)';
+  exitBtn.appendChild(createSvg(20, 20, '0 0 24 24', {},
+    [
+      { tag: 'rect', attrs: { x: '2', y: '3', width: '20', height: '14', rx: '2' } },
+      { tag: 'line', attrs: { x1: '8', y1: '21', x2: '16', y2: '21' } },
+      { tag: 'line', attrs: { x1: '12', y1: '17', x2: '12', y2: '21' } },
+    ]
+  ));
+  videoModeOverlay.appendChild(exitBtn);
 
-    /* Exit button — bottom right */
-    #termwatch-vm-exit {
-      bottom: 16px;
-      right: 16px;
-      width: 40px;
-      height: 40px;
-    }
-  `;
+  // Inject CSS via IPC → main process uses webContents.insertCSS (bypasses CSP)
+  ipcRenderer.send('video:inject-overlay-css');
 
-  document.head.appendChild(videoModeStyle);
   document.body.appendChild(videoModeOverlay);
 
   // Wire up click handlers
-  document.getElementById('termwatch-vm-back').addEventListener('click', () => {
-    ipcRenderer.send('video:go-back');
-  });
-  document.getElementById('termwatch-vm-forward').addEventListener('click', () => {
-    ipcRenderer.send('video:go-forward');
-  });
-  document.getElementById('termwatch-vm-exit').addEventListener('click', () => {
-    ipcRenderer.send('video:exit-video-mode');
-  });
+  backBtn.addEventListener('click', () => ipcRenderer.send('video:go-back'));
+  fwdBtn.addEventListener('click', () => ipcRenderer.send('video:go-forward'));
+  exitBtn.addEventListener('click', () => ipcRenderer.send('video:exit-video-mode'));
 
   // Show controls on mouse move, hide after idle
   mouseMoveHandler = () => showControls();
@@ -289,10 +240,7 @@ function removeVideoModeOverlay() {
     videoModeOverlay.remove();
     videoModeOverlay = null;
   }
-  if (videoModeStyle) {
-    videoModeStyle.remove();
-    videoModeStyle = null;
-  }
+  // CSS is injected via webContents.insertCSS (main process) — no style element to remove
 }
 
 // Overlay show/hide — main frame only
