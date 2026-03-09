@@ -104,6 +104,20 @@ class Settings {
     });
     this._modal.addEventListener('keyup', (e) => e.stopPropagation());
 
+    // Stepper buttons (custom +/- for number inputs)
+    this._modal.querySelectorAll('.settings-stepper-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        const delta = parseInt(btn.dataset.delta, 10);
+        const min = parseInt(input.min, 10);
+        const max = parseInt(input.max, 10);
+        let val = parseInt(input.value, 10) + delta;
+        val = Math.max(min, Math.min(max, val));
+        input.value = val;
+        input.dispatchEvent(new Event('change'));
+      });
+    });
+
     // --- Terminal Settings ---
 
     // Opacity

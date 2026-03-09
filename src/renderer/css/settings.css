@@ -138,9 +138,58 @@
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.settings-number::-webkit-inner-spin-button {
-  opacity: 1;
+.settings-number::-webkit-inner-spin-button,
+.settings-number::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Stepper (number input with +/- buttons) */
+.settings-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.settings-stepper .settings-number {
+  border: none;
+  border-radius: 0;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  width: 56px;
+}
+
+.settings-stepper .settings-number:focus {
+  box-shadow: none;
+  border-color: var(--border-focus);
+}
+
+.settings-stepper-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: none;
   cursor: pointer;
+  font-size: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-stepper-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.settings-stepper-btn:active {
+  background: var(--surface-active);
 }
 
 /* Select */

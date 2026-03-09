@@ -150,7 +150,11 @@
 
         <div class="settings-row">
           <span class="settings-label">Font Size</span>
-          <input type="number" class="settings-number" id="setting-font-size" min="8" max="32" value="14">
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" data-target="setting-font-size" data-delta="-1">-</button>
+            <input type="number" class="settings-number" id="setting-font-size" min="8" max="32" value="14">
+            <button class="settings-stepper-btn" data-target="setting-font-size" data-delta="1">+</button>
+          </div>
         </div>
 
         <div class="settings-row">
@@ -199,7 +203,11 @@
 
         <div class="settings-row">
           <span class="settings-label">Scrollback Lines</span>
-          <input type="number" class="settings-number" id="setting-scrollback" min="100" max="50000" value="1000" step="100">
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" data-target="setting-scrollback" data-delta="-100">-</button>
+            <input type="number" class="settings-number" id="setting-scrollback" min="100" max="50000" value="1000" step="100">
+            <button class="settings-stepper-btn" data-target="setting-scrollback" data-delta="100">+</button>
+          </div>
         </div>
       </div>
 
