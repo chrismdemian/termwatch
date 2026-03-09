@@ -3,6 +3,11 @@ class Controls {
     this.videoState = { currentTime: 0, duration: 0, paused: true, volume: 1, muted: false };
     this._preMuteVolume = 1;
     this._autoHideTimeout = null;
+    // Smooth seek bar interpolation state
+    this._lastKnownTime = 0;
+    this._lastUpdateTs = 0;
+    this._seekAnimId = null;
+    this._userSeeking = false;
     this._init();
   }
 
@@ -41,6 +46,15 @@ class Controls {
 
     // Seek bar
     const seekBar = document.getElementById('seek-bar');
+    seekBar.addEventListener('mousedown', () => { this._userSeeking = true; });
+    document.addEventListener('mouseup', () => {
+      if (this._userSeeking) {
+        this._userSeeking = false;
+        if (!this.videoState.paused && this.videoState.duration > 0) {
+          this._startSeekAnimation();
+        }
+      }
+    });
     seekBar.addEventListener('input', () => {
       const time = (seekBar.value / 100) * this.videoState.duration;
       window.videoControlAPI.seek(time);
@@ -79,7 +93,15 @@ class Controls {
     // Video state updates
     window.videoControlAPI.onState((state) => {
       this.videoState = state;
+      this._lastKnownTime = state.currentTime;
+      this._lastUpdateTs = performance.now();
       this._updateUI();
+      // Start or stop smooth seek animation based on play state
+      if (!state.paused && state.duration > 0) {
+        this._startSeekAnimation();
+      } else {
+        this._stopSeekAnimation();
+      }
     });
 
     // URL updates from video view
@@ -130,8 +152,9 @@ class Controls {
     document.getElementById('time-current').textContent = this._formatTime(currentTime);
     document.getElementById('time-duration').textContent = this._formatTime(duration);
 
-    // Seek bar
-    if (duration > 0) {
+    // Seek bar — only set directly when paused or no animation running
+    // (smooth animation handles it during playback)
+    if (duration > 0 && (paused || !this._seekAnimId)) {
       document.getElementById('seek-bar').value = (currentTime / duration) * 100;
     }
 
@@ -160,6 +183,32 @@ class Controls {
     if (this._autoHideTimeout) {
       clearTimeout(this._autoHideTimeout);
       this._autoHideTimeout = null;
+    }
+  }
+
+  _startSeekAnimation() {
+    if (this._seekAnimId) return; // already running
+    const tick = () => {
+      if (this._userSeeking || this.videoState.paused) {
+        this._seekAnimId = null;
+        return;
+      }
+      const elapsed = (performance.now() - this._lastUpdateTs) / 1000;
+      const duration = this.videoState.duration;
+      const predicted = Math.min(this._lastKnownTime + elapsed, duration);
+      if (duration > 0) {
+        document.getElementById('seek-bar').value = (predicted / duration) * 100;
+        document.getElementById('time-current').textContent = this._formatTime(predicted);
+      }
+      this._seekAnimId = requestAnimationFrame(tick);
+    };
+    this._seekAnimId = requestAnimationFrame(tick);
+  }
+
+  _stopSeekAnimation() {
+    if (this._seekAnimId) {
+      cancelAnimationFrame(this._seekAnimId);
+      this._seekAnimId = null;
     }
   }
 
