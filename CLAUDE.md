@@ -113,15 +113,35 @@ Warm cinema aesthetic, NOT typical AI/tech dashboard. Key tokens:
 
 ## Git Workflow
 
+**Feature branch workflow.** All new work goes on feature branches — never commit directly to `master`.
+
 **Do NOT add `Co-Authored-By` lines to commit messages.**
 
-**If running in a worktree**: You're already on an isolated branch. Just develop, commit, and push. Do NOT create a new branch.
+**If running in a worktree** (working directory contains `.claude/worktrees/`): You're already on an isolated branch. Just develop, commit, and push. Do NOT create a new branch — use the worktree branch you're on.
+
+**Worktree setup:** Git worktrees only contain git-tracked files — anything in `.gitignore` is absent. At the start of a worktree session, **always run these setup steps before building or launching:**
+1. `npm install` — install dependencies
+2. `npm run rebuild` — rebuild native modules (`@lydell/node-pty`) for Electron
+
+These steps are idempotent — safe to run even if already done.
 
 **If running in the main repo:**
 1. Create a branch: `git checkout -b feature/description`
 2. Develop and commit on the branch.
 
-Commit and push to the feature branch after every change — major or minor. Do not wait for the user to ask.
+Commit and push to the feature branch after every change — major or minor. Do not wait for the user to ask. **Never push directly to `master`** — always push to the feature/worktree branch and let the user decide when to merge.
+
+### Merging to Master
+
+**When the user asks you to merge to `master`:**
+
+**Important:** In a worktree, you **cannot** `git checkout master` — it's already checked out in the main repo. Run all merge commands from the main repo directory (e.g., `cd "C:/Users/chris/Projects/termwatch"` — the repo root, NOT the worktree).
+
+1. `cd <main-repo-root> && git pull origin master` — get latest (other branches may have merged first)
+2. `git merge <your-branch> --no-ff` — merge your work
+3. If there are conflicts, **read both sides carefully**, understand the intent of the existing code (from a previously merged branch), and resolve by incorporating both sets of changes. Do not discard the other branch's work.
+4. `npm start` — verify the app launches without errors after merge.
+5. Push to master. Delete the remote feature branch.
 
 When changes affect architecture, commands, conventions, or project structure, update this CLAUDE.md file to reflect them.
 
