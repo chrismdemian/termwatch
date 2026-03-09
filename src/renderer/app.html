@@ -98,6 +98,25 @@
     <button class="ctrl-btn" id="btn-video-mode" title="Video Mode (Ctrl+Shift+V)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
     </button>
+
+    <div class="ctrl-separator"></div>
+
+    <!-- Fullscreen toggle -->
+    <button class="ctrl-btn" id="btn-fullscreen" title="Fullscreen (F11)">
+      <svg id="icon-enter-fullscreen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      <svg id="icon-exit-fullscreen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+    </button>
+
+    <!-- Fullscreen window controls (minimize/close, shown only in fullscreen) -->
+    <div id="fullscreen-window-controls" class="fullscreen-window-controls hidden">
+      <div class="ctrl-separator"></div>
+      <button class="ctrl-btn" id="btn-fs-minimize" title="Minimize">
+        <svg width="10" height="1" viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg>
+      </button>
+      <button class="ctrl-btn ctrl-btn-close" id="btn-fs-close" title="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.2"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- Bookmarks Bar -->

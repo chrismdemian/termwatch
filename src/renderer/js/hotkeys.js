@@ -8,6 +8,7 @@ class Hotkeys {
     this.theaterMode = false;
 
     this._setup();
+    this._setupFullscreen();
   }
 
   _setup() {
@@ -100,6 +101,19 @@ class Hotkeys {
         document.getElementById('video-mode-indicator').classList.add('hidden');
       }
     });
+
+    // Fullscreen toggle button
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      window.windowAPI.toggleFullscreen();
+    });
+
+    // Fullscreen window controls (minimize/close in controls bar)
+    document.getElementById('btn-fs-minimize').addEventListener('click', () => {
+      window.windowAPI.minimize();
+    });
+    document.getElementById('btn-fs-close').addEventListener('click', () => {
+      window.windowAPI.close();
+    });
   }
 
   _toggleVideoMode() {
@@ -132,6 +146,46 @@ class Hotkeys {
       termArea.classList.remove('theater-mode');
       controlsBar.classList.remove('theater-hidden');
       theaterExit.classList.add('hidden');
+    }
+  }
+
+  _setupFullscreen() {
+    // Use stored preference for initial UI (avoids flicker — live query returns
+    // false before main process calls setFullScreen in did-finish-load)
+    window.storeAPI.get('isFullscreen').then((isFs) => {
+      this._applyFullscreenUI(!!isFs);
+    });
+
+    // Listen for live changes from main process
+    window.windowAPI.onFullscreenChanged((isFs) => {
+      this._applyFullscreenUI(isFs);
+    });
+  }
+
+  _applyFullscreenUI(isFullscreen) {
+    const titlebar = document.getElementById('titlebar');
+    const termArea = document.getElementById('terminal-area');
+    const fsControls = document.getElementById('fullscreen-window-controls');
+    const iconEnter = document.getElementById('icon-enter-fullscreen');
+    const iconExit = document.getElementById('icon-exit-fullscreen');
+
+    if (isFullscreen) {
+      titlebar.classList.add('fullscreen-hidden');
+      termArea.classList.add('fullscreen');
+      fsControls.classList.remove('hidden');
+      iconEnter.classList.add('hidden');
+      iconExit.classList.remove('hidden');
+    } else {
+      titlebar.classList.remove('fullscreen-hidden');
+      termArea.classList.remove('fullscreen');
+      fsControls.classList.add('hidden');
+      iconEnter.classList.remove('hidden');
+      iconExit.classList.add('hidden');
+    }
+
+    // Trigger terminal resize after layout shift
+    if (this.terminalManager) {
+      setTimeout(() => this.terminalManager.fitAll(), 50);
     }
   }
 

@@ -91,6 +91,10 @@ html, body {
   color: white;
 }
 
+.titlebar.fullscreen-hidden {
+  display: none;
+}
+
 /* Terminal Area */
 .terminal-area {
   position: absolute;
@@ -101,7 +105,12 @@ html, body {
   display: grid;
   gap: 4px;
   padding: 0 4px 4px;
-  transition: opacity var(--duration-slow) var(--easing);
+  transition: opacity var(--duration-slow) var(--easing),
+              top var(--duration-normal) var(--easing);
+}
+
+.terminal-area.fullscreen {
+  top: 0;
 }
 
 .terminal-area.theater-mode {
