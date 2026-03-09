@@ -1,6 +1,7 @@
 class Controls {
   constructor() {
     this.videoState = { currentTime: 0, duration: 0, paused: true, volume: 1, muted: false };
+    this._preMuteVolume = 1;
     this._autoHideTimeout = null;
     this._init();
   }
@@ -48,12 +49,21 @@ class Controls {
     // Volume
     const volumeSlider = document.getElementById('volume-slider');
     volumeSlider.addEventListener('input', () => {
-      window.videoControlAPI.setVolume(parseFloat(volumeSlider.value));
+      const vol = parseFloat(volumeSlider.value);
+      if (vol > 0) this._preMuteVolume = vol;
+      window.videoControlAPI.setVolume(vol);
     });
     document.getElementById('btn-volume').addEventListener('click', () => {
-      const newVol = this.videoState.volume > 0 ? 0 : 1;
-      window.videoControlAPI.setVolume(newVol);
-      volumeSlider.value = newVol;
+      const effectivelyMuted = this.videoState.volume < 0.01 || this.videoState.muted;
+      if (!effectivelyMuted) {
+        this._preMuteVolume = this.videoState.volume;
+        window.videoControlAPI.setVolume(0);
+        volumeSlider.value = 0;
+      } else {
+        const restoreVol = this._preMuteVolume >= 0.01 ? this._preMuteVolume : 1;
+        window.videoControlAPI.setVolume(restoreVol);
+        volumeSlider.value = restoreVol;
+      }
     });
 
     // Opacity
@@ -125,7 +135,10 @@ class Controls {
       document.getElementById('seek-bar').value = (currentTime / duration) * 100;
     }
 
-    // Volume
+    // Volume icon
+    const isMuted = volume < 0.01 || this.videoState.muted;
+    document.getElementById('icon-volume-on').classList.toggle('hidden', isMuted);
+    document.getElementById('icon-volume-muted').classList.toggle('hidden', !isMuted);
     document.getElementById('volume-slider').value = volume;
   }
 
