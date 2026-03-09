@@ -5,6 +5,92 @@ const store = require('./store');
 let videoView = null;
 let appView = null;
 let baseWindow = null;
+let videoModeActive = false;
+let overlayCssKey = null; // key from webContents.insertCSS, used for removal
+
+// Overlay CSS injected via webContents.insertCSS to bypass Trusted Types CSP
+const OVERLAY_CSS = `
+  #termwatch-vm-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(12, 12, 20, 0.85);
+    color: #e8e6e3;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-family: -apple-system, system-ui, sans-serif;
+    font-size: 14px;
+    z-index: 2147483647;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    animation: termwatch-fade 4s ease-out forwards;
+    pointer-events: none;
+  }
+  #termwatch-vm-toast kbd {
+    background: #1a1a2e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+    font-size: 12px;
+  }
+  @keyframes termwatch-fade {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .termwatch-vm-nav,
+  .termwatch-vm-control {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(12, 12, 20, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    z-index: 2147483647;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.15s, color 0.15s, border-color 0.15s;
+    pointer-events: none;
+  }
+  .termwatch-vm-visible .termwatch-vm-nav,
+  .termwatch-vm-visible .termwatch-vm-control {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .termwatch-vm-nav:hover,
+  .termwatch-vm-control:hover {
+    background: rgba(12, 12, 20, 0.9);
+    color: #d4915e;
+    border-color: rgba(212, 145, 94, 0.4);
+  }
+  #termwatch-vm-back {
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+  }
+  #termwatch-vm-forward {
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+  }
+  #termwatch-vm-exit {
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+`;
 
 // --- Frame coordinator state ---
 // Tracks which frames have <video> elements, selects the "real" content frame
@@ -79,6 +165,81 @@ function sendToActiveFrame(channel, data) {
     selectActiveFrame();
     return false;
   }
+}
+
+/**
+ * Exit video mode from anywhere — main process failsafe.
+ * Safe to call even if not in video mode.
+ */
+function exitVideoMode() {
+  if (!appView || !videoView) return;
+  if (!videoModeActive) return;
+  videoModeActive = false;
+  if (!videoView.webContents.isDestroyed()) {
+    videoView.webContents.send('video:hide-exit-overlay');
+  }
+  appView.setVisible(true);
+  if (!appView.webContents.isDestroyed()) {
+    try {
+      appView.webContents.send('video:mode-exited');
+    } catch (e) {
+      // View disposed during shutdown
+    }
+  }
+}
+
+/**
+ * Set up main-process keyboard handling for video mode.
+ * Uses before-input-event on the video view's webContents — fires before the
+ * page gets the event, so it works regardless of preload state or page navigation.
+ */
+function setupVideoModeKeyboard() {
+  if (!videoView) return;
+  videoView.webContents.on('before-input-event', (event, input) => {
+    if (!videoModeActive) return;
+    if (input.type !== 'keyDown') return;
+
+    // Ctrl+Shift+V → exit video mode
+    if (input.control && input.shift && input.key.toLowerCase() === 'v') {
+      event.preventDefault();
+      exitVideoMode();
+      return;
+    }
+
+    // Escape → exit video mode (don't preventDefault — let the page also handle it)
+    if (input.key === 'Escape') {
+      exitVideoMode();
+      return;
+    }
+
+    // Alt+Left → go back (browser-like navigation)
+    if (input.alt && input.key === 'ArrowLeft') {
+      event.preventDefault();
+      if (videoView.webContents.canGoBack()) {
+        videoView.webContents.goBack();
+      }
+      return;
+    }
+
+    // Alt+Right → go forward
+    if (input.alt && input.key === 'ArrowRight') {
+      event.preventDefault();
+      if (videoView.webContents.canGoForward()) {
+        videoView.webContents.goForward();
+      }
+      return;
+    }
+  });
+
+  // Re-inject exit overlay after page navigation while in video mode.
+  // The preload re-initializes on navigation, losing videoModeActive state.
+  // Old insertCSS key is invalid after navigation — clear it so fresh CSS is injected.
+  videoView.webContents.on('did-finish-load', () => {
+    overlayCssKey = null;
+    if (videoModeActive && !videoView.webContents.isDestroyed()) {
+      videoView.webContents.send('video:show-exit-overlay');
+    }
+  });
 }
 
 function register() {
@@ -214,6 +375,7 @@ function register() {
   // --- Video mode toggle ---
   ipcMain.on('toggle-video-mode', (e, enabled) => {
     if (!appView || !videoView) return;
+    videoModeActive = enabled;
     if (enabled) {
       appView.setVisible(false);
       // Send overlay show to main frame via webContents.send (main frame only)
@@ -228,20 +390,21 @@ function register() {
     }
   });
 
-  // Exit video mode from the video view's exit button
+  // Inject overlay CSS via webContents.insertCSS (bypasses Trusted Types CSP)
+  ipcMain.on('video:inject-overlay-css', () => {
+    if (!videoView || videoView.webContents.isDestroyed()) return;
+    // Remove previous injection if any (prevents accumulation across toggles/navigations)
+    if (overlayCssKey) {
+      videoView.webContents.removeInsertedCSS(overlayCssKey).catch(() => {});
+    }
+    videoView.webContents.insertCSS(OVERLAY_CSS)
+      .then(key => { overlayCssKey = key; })
+      .catch(() => {});
+  });
+
+  // Exit video mode — called from video preload's exit button/keyboard, or from main process
   ipcMain.on('video:exit-video-mode', () => {
-    if (!appView || !videoView) return;
-    if (!videoView.webContents.isDestroyed()) {
-      videoView.webContents.send('video:hide-exit-overlay');
-    }
-    appView.setVisible(true);
-    if (!appView.webContents.isDestroyed()) {
-      try {
-        appView.webContents.send('video:mode-exited');
-      } catch (e) {
-        // View disposed during shutdown
-      }
-    }
+    exitVideoMode();
   });
 
   // --- Window controls ---
@@ -340,4 +503,4 @@ function cleanup() {
   activeFrameId = null;
 }
 
-module.exports = { register, setViews, clearVideoFrames, cleanup };
+module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup };

@@ -160,3 +160,6 @@ With `nodeIntegration: true`, `__dirname` in a `<script>` tag resolves to the HT
 
 ### IPC send to disposed renderer crashes
 During shutdown, PTY processes may still be sending data after the renderer is destroyed. Always wrap `webContents.send()` in try/catch in addition to the `isDestroyed()` check — the frame can be disposed between the check and the send.
+
+### Trusted Types CSP blocks innerHTML on major sites
+YouTube (and other Google properties) enforce Trusted Types CSP — `innerHTML` assignments throw `"This document requires 'TrustedHTML' assignment"`. In the video preload, always use `document.createElement()` to build DOM elements. For CSS, use `webContents.insertCSS()` from the main process (bypasses CSP entirely). Never use `innerHTML` or `<style>` element injection in the video preload.
