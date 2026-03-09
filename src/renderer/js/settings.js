@@ -137,10 +137,12 @@ class Settings {
 
     // Shadow intensity
     const shadowSlider = document.getElementById('setting-shadow-intensity');
+    const shadowValueLabel = document.getElementById('setting-shadow-intensity-value');
     shadowSlider.addEventListener('input', () => {
       const val = parseFloat(shadowSlider.value);
       this._values.shadowIntensity = val;
       this._applyShadowIntensity(val);
+      shadowValueLabel.textContent = Math.round(val * 100) + '%';
       window.storeAPI.set('shadowIntensity', val);
     });
 
@@ -274,6 +276,7 @@ class Settings {
     document.getElementById('setting-opacity').value = this._values.opacity;
     document.getElementById('setting-opacity-value').textContent = Math.round(this._values.opacity * 100) + '%';
     document.getElementById('setting-shadow-intensity').value = this._values.shadowIntensity;
+    document.getElementById('setting-shadow-intensity-value').textContent = Math.round(this._values.shadowIntensity * 100) + '%';
     document.getElementById('setting-font-size').value = this._values.terminalFontSize;
     document.getElementById('setting-font-family').value = this._values.terminalFontFamily;
     document.getElementById('setting-text-color-hex').value = this._values.terminalTextColor;
