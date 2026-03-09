@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TermWatch</title>
+  <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/terminal.css">
+  <link rel="stylesheet" href="css/controls.css">
+  <link rel="stylesheet" href="css/bookmarks.css">
+</head>
+<body>
+  <!-- Title Bar -->
+  <div id="titlebar" class="titlebar">
+    <span class="titlebar-title">TermWatch</span>
+    <div class="titlebar-controls" id="titlebar-controls">
+      <button class="titlebar-btn" id="btn-minimize" title="Minimize">
+        <svg width="10" height="1" viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg>
+      </button>
+      <button class="titlebar-btn" id="btn-maximize" title="Maximize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><rect width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="titlebar-btn titlebar-btn-close" id="btn-close" title="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.2"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Terminal Area -->
+  <div id="terminal-area" class="terminal-area"></div>
+
+  <!-- Video Mode Indicator -->
+  <div id="video-mode-indicator" class="video-mode-indicator hidden">
+    Press <kbd>Ctrl+Shift+V</kbd> to return to terminals
+  </div>
+
+  <!-- Theater Mode Exit -->
+  <div id="theater-exit" class="theater-exit hidden">
+    <button class="btn" id="btn-exit-theater">Exit Theater Mode</button>
+  </div>
+
+  <!-- Controls Bar -->
+  <div id="controls-bar" class="controls-bar">
+    <!-- Navigation -->
+    <button class="ctrl-btn" id="btn-back" title="Back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="ctrl-btn" id="btn-forward" title="Forward">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <input type="text" class="url-input" id="url-input" placeholder="Enter URL..." spellcheck="false">
+
+    <div class="ctrl-separator"></div>
+
+    <!-- Playback -->
+    <button class="ctrl-btn" id="btn-play-pause" title="Play/Pause">
+      <svg id="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>
+      <svg id="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="hidden"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+    </button>
+
+    <!-- Seek -->
+    <span class="time-display" id="time-current">0:00</span>
+    <input type="range" class="seek-bar" id="seek-bar" min="0" max="100" value="0" step="0.1">
+    <span class="time-display" id="time-duration">0:00</span>
+
+    <div class="ctrl-separator"></div>
+
+    <!-- Volume -->
+    <button class="ctrl-btn" id="btn-volume" title="Mute/Unmute">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    </button>
+    <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" value="1" step="0.01">
+
+    <div class="ctrl-separator"></div>
+
+    <!-- Opacity -->
+    <span class="ctrl-label">Opacity</span>
+    <input type="range" class="opacity-slider" id="opacity-slider" min="0" max="1" value="0.65" step="0.01">
+
+    <div class="ctrl-separator"></div>
+
+    <!-- Layout -->
+    <select class="layout-select" id="layout-select">
+      <option value="1x1">1x1</option>
+      <option value="1x2">1x2</option>
+      <option value="2x1">2x1</option>
+      <option value="2x2">2x2</option>
+      <option value="1x3">1x3</option>
+    </select>
+
+    <!-- Bookmarks toggle -->
+    <button class="ctrl-btn" id="btn-bookmarks" title="Bookmarks (Ctrl+Shift+B)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    </button>
+
+    <!-- Video mode -->
+    <button class="ctrl-btn" id="btn-video-mode" title="Video Mode (Ctrl+Shift+V)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    </button>
+  </div>
+
+  <!-- Bookmarks Bar -->
+  <div id="bookmarks-bar" class="bookmarks-bar hidden">
+    <div class="bookmarks-list" id="bookmarks-list"></div>
+    <button class="bookmark-add-btn" id="btn-add-bookmark" title="Add bookmark">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

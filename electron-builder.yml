@@ -1,0 +1,51 @@
+appId: com.termwatch.app
+productName: TermWatch
+copyright: Copyright © 2026 TermWatch
+
+directories:
+  output: dist
+
+files:
+  - src/**/*
+  - "!**/*.map"
+
+asar: true
+asarUnpack:
+  - "**/node_modules/@lydell/node-pty*/**"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  runAfterFinish: true
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: build/icon.icns
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+publish:
+  provider: github
+  releaseType: draft
