@@ -89,8 +89,26 @@ function register() {
     if (!appView || !videoView) return;
     if (enabled) {
       appView.setVisible(false);
+      if (!videoView.webContents.isDestroyed()) {
+        videoView.webContents.send('video:show-exit-overlay');
+      }
     } else {
+      if (!videoView.webContents.isDestroyed()) {
+        videoView.webContents.send('video:hide-exit-overlay');
+      }
       appView.setVisible(true);
+    }
+  });
+
+  // Exit video mode from the video view's exit button
+  ipcMain.on('video:exit-video-mode', () => {
+    if (!appView || !videoView) return;
+    if (!videoView.webContents.isDestroyed()) {
+      videoView.webContents.send('video:hide-exit-overlay');
+    }
+    appView.setVisible(true);
+    if (!appView.webContents.isDestroyed()) {
+      appView.webContents.send('video:mode-exited');
     }
   });
 

@@ -55,6 +55,11 @@ window.windowAPI = {
     return () => ipcRenderer.removeListener('window:maximized', handler);
   },
   toggleVideoMode: (enabled) => ipcRenderer.send('toggle-video-mode', enabled),
+  onVideoModeExited: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('video:mode-exited', handler);
+    return () => ipcRenderer.removeListener('video:mode-exited', handler);
+  },
 };
 
 window.storeAPI = {

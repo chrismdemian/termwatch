@@ -92,6 +92,14 @@ class Hotkeys {
     document.getElementById('btn-video-mode').addEventListener('click', () => {
       this._toggleVideoMode();
     });
+
+    // Video mode exited from the video view's exit button or keyboard shortcut
+    window.windowAPI.onVideoModeExited(() => {
+      if (this.videoMode) {
+        this.videoMode = false;
+        document.getElementById('video-mode-indicator').classList.add('hidden');
+      }
+    });
   }
 
   _toggleVideoMode() {
