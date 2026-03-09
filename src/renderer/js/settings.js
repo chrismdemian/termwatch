@@ -132,19 +132,13 @@ class Settings {
     });
 
     // Text color
-    const textColorSwatch = document.getElementById('setting-text-color');
+    const textColorPreview = document.getElementById('setting-text-color-preview');
     const textColorHex = document.getElementById('setting-text-color-hex');
-    textColorSwatch.addEventListener('input', () => {
-      textColorHex.value = textColorSwatch.value;
-      this._values.terminalTextColor = textColorSwatch.value;
-      this._applyTerminalColors();
-      window.storeAPI.set('terminalTextColor', textColorSwatch.value);
-    });
     textColorHex.addEventListener('change', () => {
       const hex = this._normalizeHex(textColorHex.value);
       if (hex) {
         textColorHex.value = hex;
-        textColorSwatch.value = hex;
+        textColorPreview.style.background = hex;
         this._values.terminalTextColor = hex;
         this._applyTerminalColors();
         window.storeAPI.set('terminalTextColor', hex);
@@ -152,19 +146,13 @@ class Settings {
     });
 
     // Selection color
-    const selColorSwatch = document.getElementById('setting-selection-color');
+    const selColorPreview = document.getElementById('setting-selection-color-preview');
     const selColorHex = document.getElementById('setting-selection-color-hex');
-    selColorSwatch.addEventListener('input', () => {
-      selColorHex.value = selColorSwatch.value;
-      this._values.terminalSelectionColor = selColorSwatch.value;
-      this._applyTerminalColors();
-      window.storeAPI.set('terminalSelectionColor', selColorSwatch.value);
-    });
     selColorHex.addEventListener('change', () => {
       const hex = this._normalizeHex(selColorHex.value);
       if (hex) {
         selColorHex.value = hex;
-        selColorSwatch.value = hex;
+        selColorPreview.style.background = hex;
         this._values.terminalSelectionColor = hex;
         this._applyTerminalColors();
         window.storeAPI.set('terminalSelectionColor', hex);
@@ -236,9 +224,9 @@ class Settings {
     document.getElementById('setting-opacity').value = this._values.opacity;
     document.getElementById('setting-font-size').value = this._values.terminalFontSize;
     document.getElementById('setting-font-family').value = this._values.terminalFontFamily;
-    document.getElementById('setting-text-color').value = this._values.terminalTextColor;
+    document.getElementById('setting-text-color-preview').style.background = this._values.terminalTextColor;
     document.getElementById('setting-text-color-hex').value = this._values.terminalTextColor;
-    document.getElementById('setting-selection-color').value = this._values.terminalSelectionColor;
+    document.getElementById('setting-selection-color-preview').style.background = this._values.terminalSelectionColor;
     document.getElementById('setting-selection-color-hex').value = this._values.terminalSelectionColor;
 
     // Cursor style segmented
