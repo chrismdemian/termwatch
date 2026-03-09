@@ -415,3 +415,26 @@
   background: var(--accent);
   color: white;
 }
+
+/* Action Button */
+.settings-action-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-action-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.settings-action-btn:active {
+  background: var(--surface-active);
+}
