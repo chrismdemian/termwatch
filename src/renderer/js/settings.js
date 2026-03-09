@@ -339,6 +339,7 @@ class Settings {
 
     const pickr = Pickr.create({
       el: selector,
+      useAsButton: true,
       theme: 'nano',
       appClass: 'termwatch-pickr',
       container: this._modal,
