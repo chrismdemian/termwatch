@@ -149,7 +149,6 @@ input[type="range"]:active::-webkit-slider-thumb {
 .seek-bar {
   flex: 1;
   min-width: 80px;
-  max-width: 300px;
 }
 
 .volume-slider {
