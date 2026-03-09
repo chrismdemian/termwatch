@@ -1,0 +1,300 @@
+/* Settings Modal Overlay */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--duration-normal) ease-out;
+  pointer-events: none;
+}
+
+.settings-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Modal */
+.settings-modal {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  transform: scale(0.96);
+  transition: transform var(--duration-slow) var(--easing);
+}
+
+.settings-overlay.visible .settings-modal {
+  transform: scale(1);
+}
+
+/* Scrollbar */
+.settings-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-modal::-webkit-scrollbar-thumb {
+  background: var(--surface-hover);
+  border-radius: 3px;
+}
+
+/* Header */
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.settings-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-close-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-close-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+/* Section */
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Row */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  margin-bottom: 8px;
+}
+
+.settings-row:last-child {
+  margin-bottom: 0;
+}
+
+.settings-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* Number Input */
+.settings-number {
+  width: 72px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  text-align: center;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+
+.settings-number:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Select */
+.settings-select {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+
+.settings-select:hover {
+  background: var(--surface-hover);
+}
+
+.settings-select:focus {
+  border-color: var(--border-focus);
+}
+
+.settings-select option {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+}
+
+/* Slider in Settings */
+.settings-slider {
+  width: 140px;
+}
+
+/* Color Input */
+.settings-color-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-color-swatch {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  background: none;
+}
+
+.settings-color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.settings-color-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.settings-color-hex {
+  width: 80px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+
+.settings-color-hex:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.settings-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.settings-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out;
+}
+
+.settings-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: transform var(--duration-fast) var(--easing),
+              background var(--duration-fast) ease-out;
+}
+
+.settings-toggle input:checked + .settings-toggle-track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.settings-toggle input:checked + .settings-toggle-track::after {
+  transform: translateX(18px);
+  background: white;
+}
+
+/* Segmented Control */
+.settings-segmented {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.settings-segmented-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-segmented-btn:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.settings-segmented-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.settings-segmented-btn.active {
+  background: var(--accent);
+  color: white;
+}
