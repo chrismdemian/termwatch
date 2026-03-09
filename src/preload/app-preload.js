@@ -46,6 +46,7 @@ window.windowAPI = {
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
   close: () => ipcRenderer.send('window:close'),
+  moveBy: (dx, dy) => ipcRenderer.send('window:move-by', dx, dy),
   isMaximized: () => ipcRenderer.invoke('window:is-maximized'),
   getPlatform: () => ipcRenderer.invoke('get-platform'),
   onMaximized: (callback) => {

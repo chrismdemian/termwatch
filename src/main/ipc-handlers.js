@@ -117,6 +117,13 @@ function register() {
     return baseWindow ? baseWindow.isMaximized() : false;
   });
 
+  ipcMain.on('window:move-by', (e, dx, dy) => {
+    if (!baseWindow || baseWindow.isDestroyed()) return;
+    if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+    const [x, y] = baseWindow.getPosition();
+    baseWindow.setPosition(x + dx, y + dy);
+  });
+
   ipcMain.handle('get-platform', () => process.platform);
 
   // --- Store ---
