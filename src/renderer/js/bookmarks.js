@@ -26,14 +26,6 @@ class Bookmarks {
     const bar = document.getElementById('bookmarks-bar');
     bar.classList.toggle('hidden', !this.visible);
     document.getElementById('btn-bookmarks').classList.toggle('active', this.visible);
-
-    // Adjust terminal area bottom when bookmarks visible
-    const termArea = document.getElementById('terminal-area');
-    termArea.style.bottom = this.visible ? '92px' : '48px';
-
-    if (window._terminalManager) {
-      setTimeout(() => window._terminalManager.fitAll(), 250);
-    }
   }
 
   addCurrent() {
