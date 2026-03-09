@@ -361,6 +361,9 @@ function register() {
       }
     }
 
+    // Suppress forwarding during source transitions when duration is invalid
+    if (!isFinite(state.duration) || state.duration <= 0) return;
+
     if (appView && !appView.webContents.isDestroyed()) {
       // Strip frame metadata before forwarding — app view doesn't need it
       const { frameId, ...cleanState } = state;

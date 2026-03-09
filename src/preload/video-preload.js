@@ -6,14 +6,56 @@ const frameId = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 
 // --- Video element detection and control ---
 let currentVideo = null;
+let trackedListeners = []; // [{ event, handler }] for cleanup
+let lastKnownDuration = 0;
+let rescanTimer = null;
 
+/**
+ * Find the best <video> element on the page.
+ * Single-video pages short-circuit. Multi-video pages score by:
+ * playing (+100), duration (clamped to +7200), visible area, has source.
+ */
 function findVideo() {
-  return document.querySelector('video');
+  const videos = document.querySelectorAll('video');
+  if (videos.length === 0) return null;
+  if (videos.length === 1) return videos[0];
+
+  let best = null;
+  let bestScore = -1;
+  for (const v of videos) {
+    let score = 0;
+    if (!v.paused) score += 100;
+    if (isFinite(v.duration) && v.duration > 0) score += Math.min(v.duration, 7200);
+    const rect = v.getBoundingClientRect();
+    score += (rect.width * rect.height) / 1000;
+    if (v.src || v.querySelector('source')) score += 10;
+    if (score > bestScore) {
+      bestScore = score;
+      best = v;
+    }
+  }
+  return best;
+}
+
+/**
+ * Remove all tracked event listeners from the current video element.
+ */
+function detachVideoListeners() {
+  if (currentVideo) {
+    for (const { event, handler } of trackedListeners) {
+      currentVideo.removeEventListener(event, handler);
+    }
+  }
+  trackedListeners = [];
 }
 
 function attachVideoListeners(video) {
   if (currentVideo === video) return;
+
+  // Clean up old listeners before attaching new ones
+  detachVideoListeners();
   currentVideo = video;
+  lastKnownDuration = 0;
 
   // Register this frame as having a video
   ipcRenderer.send('video:frame-register', { frameId });
@@ -39,12 +81,50 @@ function attachVideoListeners(video) {
     }
   };
 
-  video.addEventListener('timeupdate', sendState);
-  video.addEventListener('play', sendState);
-  video.addEventListener('pause', sendState);
-  video.addEventListener('volumechange', sendState);
-  video.addEventListener('loadedmetadata', sendState);
-  video.addEventListener('durationchange', sendState);
+  // Detect same-element source changes (ad → content or content → ad)
+  const onDurationChange = () => {
+    if (currentVideo !== video) return; // stale event from detached listener
+    sendState();
+    const newDur = currentVideo.duration;
+    if (isFinite(newDur) && newDur > 0 && lastKnownDuration > 0) {
+      const ratio = newDur / lastKnownDuration;
+      if (ratio < 0.2 || ratio > 5) {
+        // Dramatic duration shift — re-scan for best video
+        const best = findVideo();
+        if (best && best !== currentVideo) {
+          attachVideoListeners(best);
+          return;
+        }
+      }
+    }
+    if (isFinite(newDur) && newDur > 0) {
+      lastKnownDuration = newDur;
+    }
+  };
+
+  const onEmptied = () => {
+    // Source removed — re-scan after a short delay to let the new source load
+    setTimeout(() => {
+      const best = findVideo();
+      if (best && best !== currentVideo) {
+        attachVideoListeners(best);
+      }
+    }, 500);
+  };
+
+  const events = [
+    ['timeupdate', sendState],
+    ['play', sendState],
+    ['pause', sendState],
+    ['volumechange', sendState],
+    ['loadedmetadata', sendState],
+    ['durationchange', onDurationChange],
+    ['emptied', onEmptied],
+  ];
+  for (const [event, handler] of events) {
+    video.addEventListener(event, handler);
+    trackedListeners.push({ event, handler });
+  }
 }
 
 // MutationObserver to detect <video> elements
@@ -52,6 +132,11 @@ const observer = new MutationObserver(() => {
   const video = findVideo();
   if (video) {
     attachVideoListeners(video);
+  } else if (currentVideo) {
+    // Video element disappeared — clean up
+    detachVideoListeners();
+    currentVideo = null;
+    ipcRenderer.send('video:frame-deregister', { frameId });
   }
 });
 
@@ -63,10 +148,29 @@ document.addEventListener('DOMContentLoaded', () => {
     childList: true,
     subtree: true,
   });
+
+  // Periodic re-scan: safety net for MSE-based source switches
+  // that don't trigger DOM mutations
+  rescanTimer = setInterval(() => {
+    const best = findVideo();
+    if (best && best !== currentVideo) {
+      attachVideoListeners(best);
+    } else if (!best && currentVideo) {
+      detachVideoListeners();
+      currentVideo = null;
+      ipcRenderer.send('video:frame-deregister', { frameId });
+    }
+  }, 2000);
 });
 
-// Deregister frame on unload
+// Deregister frame on unload and clean up timers
 window.addEventListener('beforeunload', () => {
+  if (rescanTimer) {
+    clearInterval(rescanTimer);
+    rescanTimer = null;
+  }
+  detachVideoListeners();
+  currentVideo = null;
   ipcRenderer.send('video:frame-deregister', { frameId });
 });
 

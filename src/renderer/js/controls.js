@@ -92,6 +92,19 @@ class Controls {
 
     // Video state updates
     window.videoControlAPI.onState((state) => {
+      // Skip updates with invalid duration (renderer-side safety net)
+      if (!isFinite(state.duration) || state.duration <= 0) return;
+
+      // Detect source change (ad ↔ content): dramatic duration shift
+      const prevDuration = this.videoState.duration;
+      if (prevDuration > 0 && state.duration > 0) {
+        const ratio = state.duration / prevDuration;
+        if (ratio < 0.2 || ratio > 5) {
+          // Source changed — stop old animation so it restarts with fresh anchors
+          this._stopSeekAnimation();
+        }
+      }
+
       this.videoState = state;
       this._lastKnownTime = state.currentTime;
       this._lastUpdateTs = performance.now();
@@ -199,7 +212,11 @@ class Controls {
   }
 
   _startSeekAnimation() {
-    if (this._seekAnimId) return; // already running
+    // Always cancel+restart so interpolation uses fresh anchor values
+    if (this._seekAnimId) {
+      cancelAnimationFrame(this._seekAnimId);
+      this._seekAnimId = null;
+    }
     const tick = () => {
       if (this._userSeeking || this.videoState.paused) {
         this._seekAnimId = null;
