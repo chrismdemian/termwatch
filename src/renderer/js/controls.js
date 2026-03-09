@@ -42,6 +42,19 @@ class Controls {
     // Play/Pause
     document.getElementById('btn-play-pause').addEventListener('click', () => {
       window.videoControlAPI.togglePlay();
+      // Optimistic UI: toggle icon immediately instead of waiting for state round-trip.
+      // Only apply when a video is loaded (duration > 0) to avoid permanent desync.
+      if (this.videoState.duration > 0) {
+        this.videoState.paused = !this.videoState.paused;
+        this._lastKnownTime = this.videoState.currentTime;
+        this._lastUpdateTs = performance.now();
+        this._updateUI();
+        if (!this.videoState.paused && this.videoState.duration > 0) {
+          this._startSeekAnimation();
+        } else {
+          this._stopSeekAnimation();
+        }
+      }
     });
 
     // Seek bar
