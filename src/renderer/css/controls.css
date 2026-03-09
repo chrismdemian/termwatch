@@ -159,6 +159,10 @@ input[type="range"]:active::-webkit-slider-thumb {
   width: 80px;
 }
 
+.shadow-slider {
+  width: 80px;
+}
+
 /* Label */
 .ctrl-label {
   font-size: 11px;

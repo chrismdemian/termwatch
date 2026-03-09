@@ -103,6 +103,16 @@ class Controls {
       window.storeAPI.set('opacity', opacity);
     });
 
+    // Shadow intensity
+    const shadowSlider = document.getElementById('shadow-slider');
+    shadowSlider.addEventListener('input', () => {
+      const intensity = parseFloat(shadowSlider.value);
+      if (window._terminalManager) {
+        window._terminalManager.setShadowIntensity(intensity);
+      }
+      window.storeAPI.set('shadowIntensity', intensity);
+    });
+
     // Video state updates
     window.videoControlAPI.onState((state) => {
       // Skip updates with invalid duration (renderer-side safety net)
@@ -256,6 +266,10 @@ class Controls {
 
   setOpacitySlider(value) {
     document.getElementById('opacity-slider').value = value;
+  }
+
+  setShadowSlider(value) {
+    document.getElementById('shadow-slider').value = value;
   }
 }
 

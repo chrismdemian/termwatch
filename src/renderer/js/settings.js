@@ -13,6 +13,13 @@ class Settings {
       this.controls.setOpacitySlider(opacity);
     }
 
+    // Load shadow intensity
+    const shadowIntensity = await window.storeAPI.get('shadowIntensity');
+    if (shadowIntensity !== undefined && shadowIntensity !== null) {
+      this.terminalManager.setShadowIntensity(shadowIntensity);
+      this.controls.setShadowSlider(shadowIntensity);
+    }
+
     // Load layout
     const layout = await window.storeAPI.get('layout');
     if (layout) {
