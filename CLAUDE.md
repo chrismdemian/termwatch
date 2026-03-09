@@ -119,6 +119,12 @@ Warm cinema aesthetic, NOT typical AI/tech dashboard. Key tokens:
 
 **If running in a worktree** (working directory contains `.claude/worktrees/`): You're already on an isolated branch. Just develop, commit, and push. Do NOT create a new branch — use the worktree branch you're on.
 
+**Worktree setup:** Git worktrees only contain git-tracked files — anything in `.gitignore` is absent. At the start of a worktree session, **always run these setup steps before building or launching:**
+1. `npm install` — install dependencies
+2. `npm run rebuild` — rebuild native modules (`@lydell/node-pty`) for Electron
+
+These steps are idempotent — safe to run even if already done.
+
 **If running in the main repo:**
 1. Create a branch: `git checkout -b feature/description`
 2. Develop and commit on the branch.
