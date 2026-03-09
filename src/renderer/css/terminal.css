@@ -60,12 +60,6 @@
   background: transparent !important;
 }
 
-/* Drop shadow on canvas for text readability */
-.terminal-panel .xterm-screen canvas {
-  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 1))
-          drop-shadow(0 0 3px rgba(0, 0, 0, 0.8));
-}
-
 /* Panel header with close/restart */
 .terminal-panel-header {
   display: none;

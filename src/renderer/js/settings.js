@@ -9,7 +9,8 @@ class Settings {
     this._pickrs = {};
 
     this._values = {
-      opacity: 0.65,
+      opacity: 0.5,
+      shadowIntensity: 1.0,
       terminalFontSize: 14,
       terminalFontFamily: "'JetBrains Mono', monospace",
       terminalTextColor: '#e8e6e3',
@@ -38,6 +39,9 @@ class Settings {
 
     // Apply opacity
     this.terminalManager.setOpacity(this._values.opacity);
+
+    // Apply shadow intensity
+    this.terminalManager.setShadowIntensity(this._values.shadowIntensity);
 
     // Apply terminal options
     this.terminalManager.setTerminalDefaults({
@@ -127,6 +131,15 @@ class Settings {
       this._values.opacity = val;
       this._applyOpacity(val);
       window.storeAPI.set('opacity', val);
+    });
+
+    // Shadow intensity
+    const shadowSlider = document.getElementById('setting-shadow-intensity');
+    shadowSlider.addEventListener('input', () => {
+      const val = parseFloat(shadowSlider.value);
+      this._values.shadowIntensity = val;
+      this._applyShadowIntensity(val);
+      window.storeAPI.set('shadowIntensity', val);
     });
 
     // Font size
@@ -257,6 +270,7 @@ class Settings {
 
     // Sync inputs to current values
     document.getElementById('setting-opacity').value = this._values.opacity;
+    document.getElementById('setting-shadow-intensity').value = this._values.shadowIntensity;
     document.getElementById('setting-font-size').value = this._values.terminalFontSize;
     document.getElementById('setting-font-family').value = this._values.terminalFontFamily;
     document.getElementById('setting-text-color-hex').value = this._values.terminalTextColor;
@@ -312,6 +326,10 @@ class Settings {
 
   _applyOpacity(val) {
     this.terminalManager.setOpacity(val);
+  }
+
+  _applyShadowIntensity(val) {
+    this.terminalManager.setShadowIntensity(val);
   }
 
   _applyTerminalFont() {

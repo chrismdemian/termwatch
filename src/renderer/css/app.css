@@ -1,6 +1,6 @@
 :root {
   --bg-deep: #0c0c14;
-  --bg-panel: rgba(12, 12, 20, 0.65);
+  --bg-panel: rgba(12, 12, 20, 0.5);
   --bg-controls: rgba(12, 12, 20, 0.85);
   --surface: #1a1a2e;
   --surface-hover: #252540;

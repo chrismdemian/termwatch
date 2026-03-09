@@ -9,7 +9,8 @@ class TerminalManager {
     this.focusedId = null;
     this._dataCleanup = null;
     this._exitCleanup = null;
-    this._opacity = 0.65;
+    this._opacity = 0.5;
+    this._shadowIntensity = 1.0;
     this._terminalDefaults = {
       fontSize: 14,
       fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace",
@@ -40,6 +41,7 @@ class TerminalManager {
       },
     };
     this._setupPtyListeners();
+    this._createShadowStyleElement();
   }
 
   _setupPtyListeners() {
@@ -194,6 +196,39 @@ class TerminalManager {
         // Ignore
       }
     }
+  }
+
+  _createShadowStyleElement() {
+    let style = document.getElementById('terminal-shadow-style');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'terminal-shadow-style';
+      document.head.appendChild(style);
+    }
+    this._shadowStyleEl = style;
+    this._updateShadowStyle();
+  }
+
+  _updateShadowStyle() {
+    if (!this._shadowStyleEl) return;
+    const i = this._shadowIntensity;
+    if (i <= 0) {
+      this._shadowStyleEl.textContent = `.terminal-panel .xterm-screen canvas { filter: none; }`;
+    } else {
+      const l1 = (1.0 * i).toFixed(2);
+      const l2 = (0.9 * i).toFixed(2);
+      const l3 = (0.4 * i).toFixed(2);
+      this._shadowStyleEl.textContent = `.terminal-panel .xterm-screen canvas {
+  filter: drop-shadow(0 0 1px rgba(0,0,0,${l1}))
+          drop-shadow(0 0 3px rgba(0,0,0,${l2}))
+          drop-shadow(0 0 8px rgba(0,0,0,${l3}));
+}`;
+    }
+  }
+
+  setShadowIntensity(intensity) {
+    this._shadowIntensity = Math.max(0, Math.min(1, intensity));
+    this._updateShadowStyle();
   }
 
   setTerminalDefaults(opts) {

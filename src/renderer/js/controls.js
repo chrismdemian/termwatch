@@ -262,6 +262,7 @@ class Controls {
   resumeAutoHide() {
     this._startAutoHide();
   }
+
 }
 
 module.exports = Controls;
