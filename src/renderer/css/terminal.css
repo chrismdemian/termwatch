@@ -27,9 +27,13 @@
   background: transparent !important;
 }
 
-/* Slim dark scrollbar (Windows Terminal style) */
+/* Slim dark scrollbar — hidden by default, expands on hover (Windows Terminal style) */
 .terminal-panel .xterm-viewport::-webkit-scrollbar {
-  width: 6px;
+  width: 2px;
+}
+
+.terminal-panel .xterm-viewport:hover::-webkit-scrollbar {
+  width: 8px;
 }
 
 .terminal-panel .xterm-viewport::-webkit-scrollbar-track {
@@ -37,12 +41,16 @@
 }
 
 .terminal-panel .xterm-viewport::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.terminal-panel .xterm-viewport:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .terminal-panel .xterm-viewport::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.35);
 }
 
 .terminal-panel .xterm-viewport::-webkit-scrollbar-corner {
