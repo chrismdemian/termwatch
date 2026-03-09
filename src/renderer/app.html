@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="css/terminal.css">
   <link rel="stylesheet" href="css/controls.css">
   <link rel="stylesheet" href="css/bookmarks.css">
+  <link rel="stylesheet" href="../../node_modules/@simonwep/pickr/dist/themes/nano.min.css">
+  <link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
   <!-- Title Bar -->
@@ -75,16 +77,6 @@
 
     <div class="ctrl-separator"></div>
 
-    <!-- Opacity -->
-    <span class="ctrl-label">Opacity</span>
-    <input type="range" class="opacity-slider" id="opacity-slider" min="0" max="1" value="0.5" step="0.01">
-
-    <!-- Shadow -->
-    <span class="ctrl-label">Shadow</span>
-    <input type="range" class="shadow-slider" id="shadow-slider" min="0" max="1" value="1" step="0.01">
-
-    <div class="ctrl-separator"></div>
-
     <!-- Layout -->
     <select class="layout-select" id="layout-select">
       <option value="1x1">1x1</option>
@@ -97,6 +89,11 @@
     <!-- Bookmarks toggle -->
     <button class="ctrl-btn" id="btn-bookmarks" title="Bookmarks (Ctrl+Shift+B)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    </button>
+
+    <!-- Settings -->
+    <button class="ctrl-btn" id="btn-settings" title="Settings (Ctrl+Shift+,)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
 
     <!-- Video mode -->
@@ -130,6 +127,130 @@
     <button class="bookmark-add-btn" id="btn-add-bookmark" title="Add bookmark">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-overlay" class="settings-overlay">
+    <div class="settings-modal" id="settings-modal">
+      <div class="settings-header">
+        <span class="settings-title">Settings</span>
+        <button class="settings-close-btn" id="settings-close-btn">
+          <svg width="12" height="12" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+
+      <!-- Terminal Section -->
+      <div class="settings-section">
+        <div class="settings-section-title">Terminal</div>
+
+        <div class="settings-row">
+          <span class="settings-label">Opacity</span>
+          <input type="range" class="settings-slider" id="setting-opacity" min="0" max="1" value="0.5" step="0.01">
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Shadow Intensity</span>
+          <input type="range" class="settings-slider" id="setting-shadow-intensity" min="0" max="1" value="1" step="0.01">
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Font Size</span>
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" data-target="setting-font-size" data-delta="-1">-</button>
+            <input type="number" class="settings-number" id="setting-font-size" min="8" max="32" value="14">
+            <button class="settings-stepper-btn" data-target="setting-font-size" data-delta="1">+</button>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Font Family</span>
+          <select class="settings-select" id="setting-font-family">
+            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+            <option value="'Cascadia Code', monospace">Cascadia Code</option>
+            <option value="'Fira Code', monospace">Fira Code</option>
+            <option value="'Consolas', monospace">Consolas</option>
+            <option value="'Courier New', monospace">Courier New</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Text Color</span>
+          <div class="settings-color-group">
+            <button class="settings-color-trigger" id="setting-text-color-trigger"></button>
+            <input type="text" class="settings-color-hex" id="setting-text-color-hex" value="#e8e6e3" maxlength="7" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Selection Color</span>
+          <div class="settings-color-group">
+            <button class="settings-color-trigger" id="setting-selection-color-trigger"></button>
+            <input type="text" class="settings-color-hex" id="setting-selection-color-hex" value="#d4915e" maxlength="7" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Cursor Style</span>
+          <div class="settings-segmented" id="setting-cursor-style">
+            <button class="settings-segmented-btn" data-value="block">Block</button>
+            <button class="settings-segmented-btn" data-value="underline">Underline</button>
+            <button class="settings-segmented-btn active" data-value="bar">Bar</button>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Cursor Blink</span>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setting-cursor-blink" checked>
+            <span class="settings-toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Scrollback Lines</span>
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" data-target="setting-scrollback" data-delta="-100">-</button>
+            <input type="number" class="settings-number" id="setting-scrollback" min="100" max="50000" value="1000" step="100">
+            <button class="settings-stepper-btn" data-target="setting-scrollback" data-delta="100">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Behavior Section -->
+      <div class="settings-section">
+        <div class="settings-section-title">Behavior</div>
+
+        <div class="settings-row">
+          <span class="settings-label">Auto-hide Controls</span>
+          <select class="settings-select" id="setting-auto-hide-delay">
+            <option value="0">Disabled</option>
+            <option value="2000">2 seconds</option>
+            <option value="3000" selected>3 seconds</option>
+            <option value="5000">5 seconds</option>
+            <option value="10000">10 seconds</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Default Layout</span>
+          <select class="settings-select" id="setting-default-layout">
+            <option value="1x1">1x1</option>
+            <option value="1x2">1x2</option>
+            <option value="2x1">2x1</option>
+            <option value="2x2">2x2</option>
+            <option value="1x3">1x3</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-label">Start in Video Mode</span>
+          <label class="settings-toggle">
+            <input type="checkbox" id="setting-start-video-mode">
+            <span class="settings-toggle-track"></span>
+          </label>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/app.js"></script>

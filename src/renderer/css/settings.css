@@ -1,0 +1,403 @@
+/* Settings Modal Overlay */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--duration-normal) ease-out;
+  pointer-events: none;
+}
+
+.settings-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Modal */
+.settings-modal {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  transform: scale(0.96);
+  transition: transform var(--duration-slow) var(--easing);
+}
+
+.settings-overlay.visible .settings-modal {
+  transform: scale(1);
+}
+
+/* Scrollbar */
+.settings-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-modal::-webkit-scrollbar-thumb {
+  background: var(--surface-hover);
+  border-radius: 3px;
+}
+
+/* Header */
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.settings-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-close-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-close-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+/* Section */
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Row */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  margin-bottom: 8px;
+}
+
+.settings-row:last-child {
+  margin-bottom: 0;
+}
+
+.settings-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* Number Input */
+.settings-number {
+  width: 72px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  text-align: center;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+
+.settings-number:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.settings-number::-webkit-inner-spin-button,
+.settings-number::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Stepper (number input with +/- buttons) */
+.settings-stepper {
+  display: flex;
+  align-items: stretch;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.settings-stepper .settings-number {
+  border: none;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+  width: 48px;
+  height: auto;
+  padding: 0 4px;
+  background: transparent;
+}
+
+.settings-stepper .settings-number:focus {
+  box-shadow: none;
+}
+
+.settings-stepper-btn {
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-stepper-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.settings-stepper-btn:active {
+  background: var(--surface-active);
+}
+
+/* Select */
+.settings-select {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+
+.settings-select:hover {
+  background: var(--surface-hover);
+}
+
+.settings-select:focus {
+  border-color: var(--border-focus);
+}
+
+.settings-select option {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+}
+
+/* Slider in Settings */
+.settings-slider {
+  width: 140px;
+}
+
+/* Color Input */
+.settings-color-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-color-trigger {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color var(--duration-fast) ease-out;
+}
+
+.settings-color-trigger:hover {
+  border-color: var(--text-muted);
+}
+
+/* Pickr dark theme overrides */
+.pcr-app {
+  background: var(--bg-deep) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.pcr-app .pcr-interaction {
+  border-top: 1px solid var(--border) !important;
+}
+
+.pcr-app .pcr-interaction input {
+  background: var(--surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace !important;
+}
+
+.pcr-app .pcr-interaction input:focus {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}
+
+.pcr-app .pcr-interaction .pcr-result {
+  color: var(--text-primary) !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace !important;
+}
+
+.pcr-app .pcr-interaction .pcr-save {
+  background: var(--accent) !important;
+  color: white !important;
+  border-radius: 6px !important;
+}
+
+.pcr-app .pcr-interaction .pcr-cancel,
+.pcr-app .pcr-interaction .pcr-clear {
+  background: var(--surface) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 6px !important;
+}
+
+.pcr-app .pcr-selection .pcr-color-preview {
+  margin-right: 0.5em !important;
+}
+
+.pcr-app .pcr-swatches > button {
+  border-radius: 4px !important;
+}
+
+.settings-color-hex {
+  width: 80px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+
+.settings-color-hex:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.settings-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.settings-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out;
+}
+
+.settings-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: transform var(--duration-fast) var(--easing),
+              background var(--duration-fast) ease-out;
+}
+
+.settings-toggle input:checked + .settings-toggle-track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.settings-toggle input:checked + .settings-toggle-track::after {
+  transform: translateX(18px);
+  background: white;
+}
+
+/* Segmented Control */
+.settings-segmented {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.settings-segmented-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease-out;
+}
+
+.settings-segmented-btn:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.settings-segmented-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.settings-segmented-btn.active {
+  background: var(--accent);
+  color: white;
+}

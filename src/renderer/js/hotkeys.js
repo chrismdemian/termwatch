@@ -1,9 +1,10 @@
 class Hotkeys {
-  constructor({ layoutManager, terminalManager, controls, bookmarks }) {
+  constructor({ layoutManager, terminalManager, controls, bookmarks, settings }) {
     this.layoutManager = layoutManager;
     this.terminalManager = terminalManager;
     this.controls = controls;
     this.bookmarks = bookmarks;
+    this.settings = settings;
     this.videoMode = false;
     this.theaterMode = false;
 
@@ -20,6 +21,30 @@ class Hotkeys {
         }
         return;
       }
+
+      // Ctrl+Shift+, toggles settings regardless of modal state
+      if (e.ctrlKey && e.shiftKey && e.code === 'Comma') {
+        e.preventDefault();
+        this.settings.toggle();
+        return;
+      }
+
+      // Escape closes settings first, then theater/video mode
+      if (e.key === 'Escape') {
+        if (this.settings.isOpen) {
+          this.settings.close();
+          return;
+        }
+        if (this.theaterMode) {
+          this._toggleTheaterMode();
+        } else if (this.videoMode) {
+          this._toggleVideoMode();
+        }
+        return;
+      }
+
+      // Block other hotkeys when settings modal is open
+      if (this.settings.isOpen) return;
 
       if (e.ctrlKey && e.shiftKey) {
         switch (e.code) {
@@ -72,14 +97,6 @@ class Hotkeys {
             e.preventDefault();
             // DevTools toggle handled by Electron default
             break;
-        }
-      }
-
-      if (e.key === 'Escape') {
-        if (this.theaterMode) {
-          this._toggleTheaterMode();
-        } else if (this.videoMode) {
-          this._toggleVideoMode();
         }
       }
     });
@@ -151,7 +168,7 @@ class Hotkeys {
 
   _setupFullscreen() {
     // Use stored preference for initial UI (avoids flicker — live query returns
-    // false before main process calls setFullScreen in did-finish-load)
+    // false before main process calls enterFullscreen in did-finish-load)
     window.storeAPI.get('isFullscreen').then((isFs) => {
       this._applyFullscreenUI(!!isFs);
     });
@@ -190,14 +207,9 @@ class Hotkeys {
   }
 
   _adjustOpacity(delta) {
-    const slider = document.getElementById('opacity-slider');
-    let val = parseFloat(slider.value) + delta;
-    val = Math.max(0, Math.min(1, val));
-    slider.value = val;
-    if (window._terminalManager) {
-      window._terminalManager.setOpacity(val);
-    }
-    window.storeAPI.set('opacity', val);
+    let val = this.settings.getOpacity() + delta;
+    val = Math.max(0, Math.min(1, parseFloat(val.toFixed(2))));
+    this.settings.setOpacity(val);
   }
 
   _getPanelIdByIndex(index) {

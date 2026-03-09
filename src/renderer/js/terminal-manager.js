@@ -11,6 +11,35 @@ class TerminalManager {
     this._exitCleanup = null;
     this._opacity = 0.5;
     this._shadowIntensity = 1.0;
+    this._terminalDefaults = {
+      fontSize: 14,
+      fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace",
+      cursorStyle: 'bar',
+      cursorBlink: true,
+      scrollback: 1000,
+      theme: {
+        background: 'transparent',
+        foreground: '#e8e6e3',
+        cursor: '#d4915e',
+        selectionBackground: 'rgba(212, 145, 94, 0.3)',
+        black: '#1a1a2e',
+        red: '#c45c5c',
+        green: '#5cc45c',
+        yellow: '#d4915e',
+        blue: '#5c8ac4',
+        magenta: '#9b59b6',
+        cyan: '#5cc4b8',
+        white: '#e8e6e3',
+        brightBlack: '#4a4858',
+        brightRed: '#e07070',
+        brightGreen: '#70e070',
+        brightYellow: '#e0a36e',
+        brightBlue: '#70a0e0',
+        brightMagenta: '#b070d0',
+        brightCyan: '#70e0d0',
+        brightWhite: '#ffffff',
+      },
+    };
     this._setupPtyListeners();
     this._createShadowStyleElement();
   }
@@ -38,32 +67,7 @@ class TerminalManager {
   async create(container, panelId) {
     const terminal = new Terminal({
       allowTransparency: true,
-      cursorBlink: true,
-      cursorStyle: 'bar',
-      fontSize: 14,
-      fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace",
-      theme: {
-        background: 'transparent',
-        foreground: '#e8e6e3',
-        cursor: '#d4915e',
-        selectionBackground: 'rgba(212, 145, 94, 0.3)',
-        black: '#1a1a2e',
-        red: '#c45c5c',
-        green: '#5cc45c',
-        yellow: '#d4915e',
-        blue: '#5c8ac4',
-        magenta: '#9b59b6',
-        cyan: '#5cc4b8',
-        white: '#e8e6e3',
-        brightBlack: '#4a4858',
-        brightRed: '#e07070',
-        brightGreen: '#70e070',
-        brightYellow: '#e0a36e',
-        brightBlue: '#70a0e0',
-        brightMagenta: '#b070d0',
-        brightCyan: '#70e0d0',
-        brightWhite: '#ffffff',
-      },
+      ...this._terminalDefaults,
     });
 
     const fitAddon = new FitAddon();
@@ -225,6 +229,36 @@ class TerminalManager {
   setShadowIntensity(intensity) {
     this._shadowIntensity = Math.max(0, Math.min(1, intensity));
     this._updateShadowStyle();
+  }
+
+  setTerminalDefaults(opts) {
+    if (opts.fontSize !== undefined) this._terminalDefaults.fontSize = opts.fontSize;
+    if (opts.fontFamily !== undefined) this._terminalDefaults.fontFamily = opts.fontFamily;
+    if (opts.cursorStyle !== undefined) this._terminalDefaults.cursorStyle = opts.cursorStyle;
+    if (opts.cursorBlink !== undefined) this._terminalDefaults.cursorBlink = opts.cursorBlink;
+    if (opts.scrollback !== undefined) this._terminalDefaults.scrollback = opts.scrollback;
+    if (opts.theme) {
+      this._terminalDefaults.theme = { ...this._terminalDefaults.theme, ...opts.theme };
+    }
+  }
+
+  updateOptions(opts) {
+    let needFit = false;
+    for (const [, entry] of this.terminals) {
+      const t = entry.terminal;
+      if (opts.fontSize !== undefined) { t.options.fontSize = opts.fontSize; needFit = true; }
+      if (opts.fontFamily !== undefined) { t.options.fontFamily = opts.fontFamily; needFit = true; }
+      if (opts.cursorStyle !== undefined) t.options.cursorStyle = opts.cursorStyle;
+      if (opts.cursorBlink !== undefined) t.options.cursorBlink = opts.cursorBlink;
+      if (opts.scrollback !== undefined) t.options.scrollback = opts.scrollback;
+      if (opts.theme) {
+        // xterm.js requires the full theme object — no partial merge
+        t.options.theme = { ...this._terminalDefaults.theme, ...opts.theme };
+      }
+    }
+    if (needFit) this.fitAll();
+    // Also update defaults for future terminals
+    this.setTerminalDefaults(opts);
   }
 
   setOpacity(opacity) {

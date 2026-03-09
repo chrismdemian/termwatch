@@ -26,11 +26,16 @@ async function init() {
     window._layoutManager = layoutManager;
 
     const settings = new Settings({ layoutManager, terminalManager, controls });
-    const hotkeys = new Hotkeys({ layoutManager, terminalManager, controls, bookmarks });
+    const hotkeys = new Hotkeys({ layoutManager, terminalManager, controls, bookmarks, settings });
 
     // Load saved settings and initialize layout
     await settings.load();
     settings.setupAutoSave();
+
+    // Start in video mode if configured
+    if (settings.getValue('startInVideoMode')) {
+      hotkeys._toggleVideoMode();
+    }
 
     console.log('[TermWatch] Init complete. Terminals:', terminalManager.terminals.size);
     console.log('[TermWatch] Terminal area children:', terminalArea.children.length);

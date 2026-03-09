@@ -8,6 +8,7 @@ class Controls {
     this._lastUpdateTs = 0;
     this._seekAnimId = null;
     this._userSeeking = false;
+    this._autoHideDelay = 3000;
     this._init();
   }
 
@@ -91,26 +92,6 @@ class Controls {
         window.videoControlAPI.setVolume(restoreVol);
         volumeSlider.value = restoreVol;
       }
-    });
-
-    // Opacity
-    const opacitySlider = document.getElementById('opacity-slider');
-    opacitySlider.addEventListener('input', () => {
-      const opacity = parseFloat(opacitySlider.value);
-      if (window._terminalManager) {
-        window._terminalManager.setOpacity(opacity);
-      }
-      window.storeAPI.set('opacity', opacity);
-    });
-
-    // Shadow intensity
-    const shadowSlider = document.getElementById('shadow-slider');
-    shadowSlider.addEventListener('input', () => {
-      const intensity = parseFloat(shadowSlider.value);
-      if (window._terminalManager) {
-        window._terminalManager.setShadowIntensity(intensity);
-      }
-      window.storeAPI.set('shadowIntensity', intensity);
     });
 
     // Video state updates
@@ -221,10 +202,19 @@ class Controls {
   }
 
   _startAutoHide() {
+    if (this._autoHideDelay === 0) return;
     this._cancelAutoHide();
     this._autoHideTimeout = setTimeout(() => {
       document.getElementById('controls-bar').classList.add('auto-hidden');
-    }, 3000);
+    }, this._autoHideDelay);
+  }
+
+  setAutoHideDelay(ms) {
+    this._autoHideDelay = ms;
+    if (ms === 0) {
+      this._cancelAutoHide();
+      document.getElementById('controls-bar').classList.remove('auto-hidden');
+    }
   }
 
   _cancelAutoHide() {
@@ -264,13 +254,15 @@ class Controls {
     }
   }
 
-  setOpacitySlider(value) {
-    document.getElementById('opacity-slider').value = value;
+  pauseAutoHide() {
+    this._cancelAutoHide();
+    document.getElementById('controls-bar').classList.remove('auto-hidden');
   }
 
-  setShadowSlider(value) {
-    document.getElementById('shadow-slider').value = value;
+  resumeAutoHide() {
+    this._startAutoHide();
   }
+
 }
 
 module.exports = Controls;

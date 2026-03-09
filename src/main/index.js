@@ -1,8 +1,11 @@
-const { app, BaseWindow, WebContentsView, session, components } = require('electron');
+const { app, BaseWindow, WebContentsView, session, components, nativeTheme } = require('electron');
 const path = require('path');
 const store = require('./store');
 const ipcHandlers = require('./ipc-handlers');
 const ptyManager = require('./pty-manager');
+
+// Force dark theme for native Chromium UI (color picker, input spinners, etc.)
+nativeTheme.themeSource = 'dark';
 
 // Handle DRM initialization (Castlabs Electron fork)
 async function initDRM() {
@@ -108,16 +111,16 @@ function createWindow() {
   // Handle fullscreen for video (decouple from app fullscreen)
   let videoTriggeredFullscreen = false;
   videoView.webContents.on('enter-html-full-screen', () => {
-    if (!baseWindow.isFullScreen()) {
+    if (!ipcHandlers.isFullscreen()) {
       videoTriggeredFullscreen = true;
-      baseWindow.setFullScreen(true);
+      ipcHandlers.enterFullscreen();
     }
     updateViewBounds();
   });
   videoView.webContents.on('leave-html-full-screen', () => {
     if (videoTriggeredFullscreen) {
       videoTriggeredFullscreen = false;
-      baseWindow.setFullScreen(false);
+      ipcHandlers.leaveFullscreen();
     }
     updateViewBounds();
   });
@@ -131,36 +134,21 @@ function createWindow() {
     saveBoundsDebounced();
   });
 
-  // Forward fullscreen state to renderer
-  baseWindow.on('enter-full-screen', () => {
-    try {
-      if (appView && !appView.webContents.isDestroyed()) {
-        appView.webContents.send('window:fullscreen-changed', true);
-      }
-    } catch (e) { /* disposed during shutdown */ }
-  });
-  baseWindow.on('leave-full-screen', () => {
-    try {
-      if (appView && !appView.webContents.isDestroyed()) {
-        appView.webContents.send('window:fullscreen-changed', false);
-      }
-    } catch (e) { /* disposed during shutdown */ }
-  });
+  // Fullscreen state is forwarded to renderer by ipcHandlers.notifyFullscreenChanged()
+  // (native enter-full-screen/leave-full-screen events don't fire for manual fullscreen)
 
   // Catch F11 before renderer/xterm processes it
   appView.webContents.on('before-input-event', (event, input) => {
     if (input.key === 'F11' && input.type === 'keyDown') {
       event.preventDefault();
-      const newState = !baseWindow.isFullScreen();
-      baseWindow.setFullScreen(newState);
-      store.set('isFullscreen', newState);
+      ipcHandlers.toggleFullscreen();
     }
   });
 
   // Show when ready (fullscreen before show if preferred)
   appView.webContents.once('did-finish-load', () => {
     if (store.get('isFullscreen')) {
-      baseWindow.setFullScreen(true);
+      ipcHandlers.enterFullscreen();
     }
     baseWindow.show();
   });
@@ -229,7 +217,7 @@ let boundsTimeout = null;
 function saveBoundsDebounced() {
   if (boundsTimeout) clearTimeout(boundsTimeout);
   boundsTimeout = setTimeout(() => {
-    if (baseWindow && !baseWindow.isDestroyed() && !baseWindow.isFullScreen()) {
+    if (baseWindow && !baseWindow.isDestroyed() && !ipcHandlers.isFullscreen()) {
       const bounds = baseWindow.getBounds();
       store.set('windowBounds', bounds);
     }
