@@ -293,8 +293,24 @@ function setupVideoModeKeyboard() {
 
 function register() {
   // --- PTY ---
+  ipcMain.handle('pty:get-available-shells', () => {
+    return ptyManager.getAvailableShells();
+  });
+
   ipcMain.handle('pty:create', (e, { cols, rows }) => {
-    const result = ptyManager.createPty(cols, rows);
+    // Look up the user's preferred shell
+    let shell = null;
+    let args = null;
+    const shellType = store.get('shellType');
+    if (shellType && shellType !== 'auto') {
+      const shells = ptyManager.getAvailableShells();
+      const match = shells.find(s => s.id === shellType);
+      if (match) {
+        shell = match.command;
+        args = match.args;
+      }
+    }
+    const result = ptyManager.createPty(cols, rows, shell, args);
     if (!result) return null;
     const p = ptyManager.getPty(result.id);
     if (p) {

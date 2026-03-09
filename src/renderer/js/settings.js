@@ -20,6 +20,7 @@ class Settings {
       autoHideDelay: 3000,
       defaultLayout: '1x1',
       startInVideoMode: false,
+      shellType: 'auto',
     };
 
     this._overlay = document.getElementById('settings-overlay');
@@ -119,6 +120,14 @@ class Settings {
     });
 
     // --- Terminal Settings ---
+
+    // Shell type
+    const shellSelect = document.getElementById('setting-shell-type');
+    shellSelect.addEventListener('change', () => {
+      this._values.shellType = shellSelect.value;
+      window.storeAPI.set('shellType', shellSelect.value);
+      this.terminalManager.restartAll();
+    });
 
     // Opacity
     const opacitySlider = document.getElementById('setting-opacity');
@@ -251,9 +260,32 @@ class Settings {
     });
   }
 
-  open() {
+  async open() {
     if (this.isOpen) return;
     this.isOpen = true;
+
+    // Populate shell dropdown
+    const shellSelect = document.getElementById('setting-shell-type');
+    try {
+      const shells = await window.terminalAPI.getAvailableShells();
+      // Rebuild options (keep the Default option, replace the rest)
+      shellSelect.innerHTML = '<option value="auto">Default</option>';
+      for (const s of shells) {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.default ? `${s.name} (default)` : s.name;
+        shellSelect.appendChild(opt);
+      }
+    } catch (e) {
+      // Keep the Default-only dropdown on error
+    }
+    shellSelect.value = this._values.shellType;
+    // If stored shell no longer exists, reset to auto
+    if (shellSelect.value !== this._values.shellType) {
+      this._values.shellType = 'auto';
+      window.storeAPI.set('shellType', 'auto');
+      shellSelect.value = 'auto';
+    }
 
     // Sync inputs to current values
     document.getElementById('setting-opacity').value = this._values.opacity;

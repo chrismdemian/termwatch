@@ -94,21 +94,6 @@ class TerminalManager {
     }
     console.log('[TermWatch] PTY created. ID:', result.id);
 
-    // Terminal input -> PTY
-    terminal.onData((data) => {
-      window.terminalAPI.writePty(result.id, data);
-    });
-
-    // Resize
-    terminal.onResize(({ cols, rows }) => {
-      window.terminalAPI.resizePty(result.id, cols, rows);
-    });
-
-    // Focus tracking
-    terminal.onFocus = terminal.textarea?.addEventListener('focus', () => {
-      this._setFocused(panelId);
-    });
-
     const entry = {
       terminal,
       fitAddon,
@@ -117,6 +102,21 @@ class TerminalManager {
       panelId,
     };
     this.terminals.set(panelId, entry);
+
+    // Terminal input -> PTY (reference entry.ptyId so restarts route correctly)
+    terminal.onData((data) => {
+      window.terminalAPI.writePty(entry.ptyId, data);
+    });
+
+    // Resize (reference entry.ptyId so restarts route correctly)
+    terminal.onResize(({ cols, rows }) => {
+      window.terminalAPI.resizePty(entry.ptyId, cols, rows);
+    });
+
+    // Focus tracking
+    terminal.onFocus = terminal.textarea?.addEventListener('focus', () => {
+      this._setFocused(panelId);
+    });
 
     // ResizeObserver for auto-fit
     const ro = new ResizeObserver(() => {
@@ -281,6 +281,31 @@ class TerminalManager {
     if (result) {
       entry.ptyId = result.id;
     }
+  }
+
+  async restartAll() {
+    const promises = [];
+    for (const [panelId, entry] of this.terminals) {
+      // Remove any exit overlay on this panel
+      const panel = entry.container.closest('.terminal-panel');
+      if (panel) {
+        const overlay = panel.querySelector('.pty-exit-overlay');
+        if (overlay) overlay.remove();
+      }
+      // Destroy old PTY, clear terminal, create new PTY
+      window.terminalAPI.destroyPty(entry.ptyId);
+      entry.terminal.clear();
+      entry.terminal.reset();
+      promises.push(
+        window.terminalAPI.createPty(entry.terminal.cols, entry.terminal.rows)
+          .then((result) => {
+            if (result) {
+              entry.ptyId = result.id;
+            }
+          })
+      );
+    }
+    await Promise.all(promises);
   }
 }
 

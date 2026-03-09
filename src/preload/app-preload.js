@@ -5,6 +5,7 @@ const { ipcRenderer } = require('electron');
 
 window.terminalAPI = {
   createPty: (cols, rows) => ipcRenderer.invoke('pty:create', { cols, rows }),
+  getAvailableShells: () => ipcRenderer.invoke('pty:get-available-shells'),
   writePty: (id, data) => ipcRenderer.send('pty:write', id, data),
   resizePty: (id, cols, rows) => ipcRenderer.send('pty:resize', id, cols, rows),
   destroyPty: (id) => ipcRenderer.send('pty:destroy', id),
