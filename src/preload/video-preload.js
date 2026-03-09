@@ -112,10 +112,28 @@ ipcRenderer.on('video:seek-relative', (e, delta) => {
   }
 });
 
-// --- Video mode exit overlay (main frame only) ---
+// --- Video mode overlay with auto-hiding controls (main frame only) ---
 let videoModeOverlay = null;
 let videoModeStyle = null;
 let videoModeActive = false;
+let mouseIdleTimer = null;
+let mouseMoveHandler = null;
+
+function showControls() {
+  if (!videoModeOverlay) return;
+  videoModeOverlay.classList.add('termwatch-vm-visible');
+  resetIdleTimer();
+}
+
+function hideControls() {
+  if (!videoModeOverlay) return;
+  videoModeOverlay.classList.remove('termwatch-vm-visible');
+}
+
+function resetIdleTimer() {
+  if (mouseIdleTimer) clearTimeout(mouseIdleTimer);
+  mouseIdleTimer = setTimeout(hideControls, 2500);
+}
 
 function createVideoModeOverlay() {
   if (!isMainFrame) return;
@@ -126,8 +144,18 @@ function createVideoModeOverlay() {
   videoModeOverlay = document.createElement('div');
   videoModeOverlay.id = 'termwatch-video-mode-overlay';
   videoModeOverlay.innerHTML = `
-    <div id="termwatch-vm-toast">Press <kbd>Esc</kbd> to return to terminals · <kbd>Alt+←</kbd> to go back</div>
-    <button id="termwatch-vm-exit" title="Return to terminals">
+    <div id="termwatch-vm-toast">Press <kbd>Esc</kbd> to return to terminals</div>
+    <button id="termwatch-vm-back" class="termwatch-vm-nav" title="Go back (Alt+←)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button id="termwatch-vm-forward" class="termwatch-vm-nav" title="Go forward (Alt+→)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+    <button id="termwatch-vm-exit" class="termwatch-vm-control" title="Return to terminals (Esc)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="2" y="3" width="20" height="14" rx="2"/>
         <line x1="8" y1="21" x2="16" y2="21"/>
@@ -169,12 +197,11 @@ function createVideoModeOverlay() {
       70% { opacity: 1; }
       100% { opacity: 0; }
     }
-    #termwatch-vm-exit {
+
+    /* --- Auto-hiding controls --- */
+    .termwatch-vm-nav,
+    .termwatch-vm-control {
       position: fixed;
-      bottom: 16px;
-      right: 16px;
-      width: 40px;
-      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -184,24 +211,80 @@ function createVideoModeOverlay() {
       color: rgba(255, 255, 255, 0.5);
       cursor: pointer;
       z-index: 2147483647;
-      transition: background 0.15s, color 0.15s;
+      opacity: 0;
+      transition: opacity 0.2s ease, background 0.15s, color 0.15s, border-color 0.15s;
+      pointer-events: none;
     }
-    #termwatch-vm-exit:hover {
+    .termwatch-vm-visible .termwatch-vm-nav,
+    .termwatch-vm-visible .termwatch-vm-control {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .termwatch-vm-nav:hover,
+    .termwatch-vm-control:hover {
       background: rgba(12, 12, 20, 0.9);
       color: #d4915e;
       border-color: rgba(212, 145, 94, 0.4);
+    }
+
+    /* Back arrow — left edge, vertically centered */
+    #termwatch-vm-back {
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 56px;
+    }
+
+    /* Forward arrow — right edge, vertically centered */
+    #termwatch-vm-forward {
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 56px;
+    }
+
+    /* Exit button — bottom right */
+    #termwatch-vm-exit {
+      bottom: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
     }
   `;
 
   document.head.appendChild(videoModeStyle);
   document.body.appendChild(videoModeOverlay);
 
+  // Wire up click handlers
+  document.getElementById('termwatch-vm-back').addEventListener('click', () => {
+    ipcRenderer.send('video:go-back');
+  });
+  document.getElementById('termwatch-vm-forward').addEventListener('click', () => {
+    ipcRenderer.send('video:go-forward');
+  });
   document.getElementById('termwatch-vm-exit').addEventListener('click', () => {
     ipcRenderer.send('video:exit-video-mode');
   });
+
+  // Show controls on mouse move, hide after idle
+  mouseMoveHandler = () => showControls();
+  document.addEventListener('mousemove', mouseMoveHandler);
+
+  // Show briefly on creation so user sees the controls exist, then auto-hide
+  showControls();
 }
 
 function removeVideoModeOverlay() {
+  if (mouseIdleTimer) {
+    clearTimeout(mouseIdleTimer);
+    mouseIdleTimer = null;
+  }
+  if (mouseMoveHandler) {
+    document.removeEventListener('mousemove', mouseMoveHandler);
+    mouseMoveHandler = null;
+  }
   if (videoModeOverlay) {
     videoModeOverlay.remove();
     videoModeOverlay = null;
