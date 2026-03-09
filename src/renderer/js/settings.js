@@ -1,9 +1,12 @@
+const Pickr = require('@simonwep/pickr');
+
 class Settings {
   constructor({ layoutManager, terminalManager, controls }) {
     this.layoutManager = layoutManager;
     this.terminalManager = terminalManager;
     this.controls = controls;
     this.isOpen = false;
+    this._pickrs = {};
 
     this._values = {
       opacity: 0.65,
@@ -131,28 +134,46 @@ class Settings {
       window.storeAPI.set('terminalFontFamily', fontFamilySelect.value);
     });
 
-    // Text color
-    const textColorPreview = document.getElementById('setting-text-color-preview');
+    // Text color (Pickr)
+    this._pickrs.textColor = this._createPickr(
+      '#setting-text-color-trigger',
+      this._values.terminalTextColor,
+      (hex) => {
+        document.getElementById('setting-text-color-hex').value = hex;
+        this._values.terminalTextColor = hex;
+        this._applyTerminalColors();
+        window.storeAPI.set('terminalTextColor', hex);
+      }
+    );
     const textColorHex = document.getElementById('setting-text-color-hex');
     textColorHex.addEventListener('change', () => {
       const hex = this._normalizeHex(textColorHex.value);
       if (hex) {
         textColorHex.value = hex;
-        textColorPreview.style.background = hex;
+        this._pickrs.textColor.setColor(hex);
         this._values.terminalTextColor = hex;
         this._applyTerminalColors();
         window.storeAPI.set('terminalTextColor', hex);
       }
     });
 
-    // Selection color
-    const selColorPreview = document.getElementById('setting-selection-color-preview');
+    // Selection color (Pickr)
+    this._pickrs.selectionColor = this._createPickr(
+      '#setting-selection-color-trigger',
+      this._values.terminalSelectionColor,
+      (hex) => {
+        document.getElementById('setting-selection-color-hex').value = hex;
+        this._values.terminalSelectionColor = hex;
+        this._applyTerminalColors();
+        window.storeAPI.set('terminalSelectionColor', hex);
+      }
+    );
     const selColorHex = document.getElementById('setting-selection-color-hex');
     selColorHex.addEventListener('change', () => {
       const hex = this._normalizeHex(selColorHex.value);
       if (hex) {
         selColorHex.value = hex;
-        selColorPreview.style.background = hex;
+        this._pickrs.selectionColor.setColor(hex);
         this._values.terminalSelectionColor = hex;
         this._applyTerminalColors();
         window.storeAPI.set('terminalSelectionColor', hex);
@@ -224,10 +245,10 @@ class Settings {
     document.getElementById('setting-opacity').value = this._values.opacity;
     document.getElementById('setting-font-size').value = this._values.terminalFontSize;
     document.getElementById('setting-font-family').value = this._values.terminalFontFamily;
-    document.getElementById('setting-text-color-preview').style.background = this._values.terminalTextColor;
     document.getElementById('setting-text-color-hex').value = this._values.terminalTextColor;
-    document.getElementById('setting-selection-color-preview').style.background = this._values.terminalSelectionColor;
+    this._pickrs.textColor.setColor(this._values.terminalTextColor);
     document.getElementById('setting-selection-color-hex').value = this._values.terminalSelectionColor;
+    this._pickrs.selectionColor.setColor(this._values.terminalSelectionColor);
 
     // Cursor style segmented
     const cursorStyleGroup = document.getElementById('setting-cursor-style');
@@ -310,6 +331,53 @@ class Settings {
 
   _applyAutoHideDelay() {
     this.controls.setAutoHideDelay(this._values.autoHideDelay);
+  }
+
+  _createPickr(selector, defaultColor, onChange) {
+    const triggerEl = document.querySelector(selector);
+    triggerEl.style.background = defaultColor;
+
+    const pickr = Pickr.create({
+      el: selector,
+      theme: 'nano',
+      appClass: 'termwatch-pickr',
+      container: this._modal,
+      default: defaultColor,
+      defaultRepresentation: 'HEX',
+      comparison: false,
+      swatches: [
+        '#e8e6e3', '#d4915e', '#c45c5c', '#5cc45c',
+        '#5c8ac4', '#9b59b6', '#5cc4b8', '#ffffff',
+      ],
+      components: {
+        preview: true,
+        opacity: false,
+        hue: true,
+        interaction: {
+          hex: true,
+          input: true,
+          save: true,
+        },
+      },
+    });
+
+    pickr.on('save', (color) => {
+      if (color) {
+        const hex = color.toHEXA().toString().slice(0, 7);
+        triggerEl.style.background = hex;
+        onChange(hex);
+      }
+      pickr.hide();
+    });
+
+    pickr.on('change', (color) => {
+      if (color) {
+        const hex = color.toHEXA().toString().slice(0, 7);
+        triggerEl.style.background = hex;
+      }
+    });
+
+    return pickr;
   }
 
   _hexToRgba(hex, alpha) {
