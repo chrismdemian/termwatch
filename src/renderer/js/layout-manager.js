@@ -48,7 +48,7 @@ class LayoutManager {
     },
   };
 
-  async setLayout(layoutName) {
+  async setLayout(layoutName, shellIds) {
     const layout = LayoutManager.LAYOUTS[layoutName];
     if (!layout) return;
 
@@ -57,6 +57,7 @@ class LayoutManager {
     this.container.innerHTML = '';
     this.panels = [];
     this.currentLayout = layoutName;
+    this._currentShellIds = shellIds || [];
 
     // Set grid template
     const subtitleZone = this.subtitleZonePercent;
@@ -72,8 +73,9 @@ class LayoutManager {
     this.container.style.gridTemplateColumns = colTemplate;
 
     // Create panels
-    for (const panelDef of layout.panels) {
-      await this._createPanel(panelDef, layout);
+    for (let i = 0; i < layout.panels.length; i++) {
+      const shellId = (shellIds && shellIds[i]) || 'auto';
+      await this._createPanel(layout.panels[i], layout, shellId);
     }
 
     // Fit all terminals after layout settles
@@ -82,7 +84,7 @@ class LayoutManager {
     });
   }
 
-  async _createPanel(panelDef, layout) {
+  async _createPanel(panelDef, layout, shellId) {
     const panelId = this._nextPanelId++;
 
     // Panel wrapper
@@ -109,7 +111,7 @@ class LayoutManager {
     this.panels.push({ panelId, element: panel });
 
     // Create terminal instance
-    await this.terminalManager.create(termContainer, panelId);
+    await this.terminalManager.create(termContainer, panelId, shellId);
   }
 
   removePanel(panelId) {
@@ -123,16 +125,14 @@ class LayoutManager {
 
   setSubtitleZone(percent) {
     this.subtitleZonePercent = percent;
-    // Re-apply current layout
-    this.setLayout(this.currentLayout);
+    // Re-apply current layout, preserving shell IDs
+    this.setLayout(this.currentLayout, this._currentShellIds);
   }
 
-  cycleLayout() {
+  getNextLayoutName() {
     const layouts = Object.keys(LayoutManager.LAYOUTS);
     const idx = layouts.indexOf(this.currentLayout);
-    const next = layouts[(idx + 1) % layouts.length];
-    this.setLayout(next);
-    return next;
+    return layouts[(idx + 1) % layouts.length];
   }
 
   getLayoutNames() {

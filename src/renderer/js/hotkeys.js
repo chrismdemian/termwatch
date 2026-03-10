@@ -90,8 +90,7 @@ class Hotkeys {
             break;
           case 'KeyL':
             e.preventDefault();
-            const next = this.layoutManager.cycleLayout();
-            document.getElementById('layout-select').value = next;
+            this.settings.switchLayout(this.layoutManager.getNextLayoutName());
             break;
           case 'KeyI':
             e.preventDefault();

@@ -20,7 +20,7 @@ class Settings {
       autoHideDelay: 3000,
       defaultLayout: '1x1',
       startInVideoMode: false,
-      shellType: 'auto',
+      shellConfig: {},
     };
 
     this._overlay = document.getElementById('settings-overlay');
@@ -35,6 +35,20 @@ class Settings {
       if (val !== undefined && val !== null) {
         this._values[key] = val;
       }
+    }
+
+    // Migration: old shellType → new shellConfig
+    const oldShellType = await window.storeAPI.get('shellType');
+    if (oldShellType && oldShellType !== 'auto') {
+      // Populate all layout sizes with the old global shell
+      const layouts = this.layoutManager.getLayoutNames();
+      const LayoutDefs = this.layoutManager.constructor.LAYOUTS;
+      for (const name of layouts) {
+        const panelCount = LayoutDefs[name].panels.length;
+        this._values.shellConfig[name] = Array(panelCount).fill(oldShellType);
+      }
+      window.storeAPI.set('shellConfig', this._values.shellConfig);
+      window.storeAPI.set('shellType', undefined);
     }
 
     // Apply opacity
@@ -58,13 +72,10 @@ class Settings {
 
     // Load layout (use defaultLayout if no saved layout)
     const layout = await window.storeAPI.get('layout');
-    if (layout) {
-      await this.layoutManager.setLayout(layout);
-      document.getElementById('layout-select').value = layout;
-    } else {
-      await this.layoutManager.setLayout(this._values.defaultLayout);
-      document.getElementById('layout-select').value = this._values.defaultLayout;
-    }
+    const layoutName = layout || this._values.defaultLayout;
+    const shellIds = this._getShellsForLayout(layoutName);
+    await this.layoutManager.setLayout(layoutName, shellIds);
+    document.getElementById('layout-select').value = layoutName;
 
     // Load subtitle zone
     const subtitleZone = await window.storeAPI.get('subtitleZoneHeight');
@@ -76,9 +87,7 @@ class Settings {
   setupAutoSave() {
     // Layout selector in controls bar
     document.getElementById('layout-select').addEventListener('change', (e) => {
-      const layout = e.target.value;
-      this.layoutManager.setLayout(layout);
-      window.storeAPI.set('layout', layout);
+      this.switchLayout(e.target.value);
     });
 
     this._setupModal();
@@ -120,14 +129,6 @@ class Settings {
     });
 
     // --- Terminal Settings ---
-
-    // Shell type
-    const shellSelect = document.getElementById('setting-shell-type');
-    shellSelect.addEventListener('change', () => {
-      this._values.shellType = shellSelect.value;
-      window.storeAPI.set('shellType', shellSelect.value);
-      this.terminalManager.restartAll();
-    });
 
     // Opacity
     const opacitySlider = document.getElementById('setting-opacity');
@@ -264,28 +265,8 @@ class Settings {
     if (this.isOpen) return;
     this.isOpen = true;
 
-    // Populate shell dropdown
-    const shellSelect = document.getElementById('setting-shell-type');
-    try {
-      const shells = await window.terminalAPI.getAvailableShells();
-      // Rebuild options (keep the Default option, replace the rest)
-      shellSelect.innerHTML = '<option value="auto">Default</option>';
-      for (const s of shells) {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.default ? `${s.name} (default)` : s.name;
-        shellSelect.appendChild(opt);
-      }
-    } catch (e) {
-      // Keep the Default-only dropdown on error
-    }
-    shellSelect.value = this._values.shellType;
-    // If stored shell no longer exists, reset to auto
-    if (shellSelect.value !== this._values.shellType) {
-      this._values.shellType = 'auto';
-      window.storeAPI.set('shellType', 'auto');
-      shellSelect.value = 'auto';
-    }
+    // Render per-terminal shell dropdowns
+    await this._renderShellDropdowns();
 
     // Sync inputs to current values
     document.getElementById('setting-opacity').value = this._values.opacity;
@@ -438,6 +419,114 @@ class Settings {
     const match = value.match(/^#?([0-9a-fA-F]{6})$/);
     if (match) return '#' + match[1].toLowerCase();
     return null;
+  }
+
+  _getShellsForLayout(layoutName) {
+    const LayoutDefs = this.layoutManager.constructor.LAYOUTS;
+    const layoutDef = LayoutDefs[layoutName];
+    if (!layoutDef) return ['auto'];
+    const panelCount = layoutDef.panels.length;
+    const saved = this._values.shellConfig[layoutName] || [];
+    const result = [];
+    for (let i = 0; i < panelCount; i++) {
+      result.push(saved[i] || 'auto');
+    }
+    return result;
+  }
+
+  async _renderShellDropdowns() {
+    const container = document.getElementById('shell-config-container');
+    container.innerHTML = '';
+
+    let shells = [];
+    try {
+      shells = await window.terminalAPI.getAvailableShells();
+    } catch (e) {
+      // No shells available
+    }
+
+    const layoutName = this.layoutManager.currentLayout;
+    const shellIds = this._getShellsForLayout(layoutName);
+    const panelCount = shellIds.length;
+
+    for (let i = 0; i < panelCount; i++) {
+      const row = document.createElement('div');
+      row.className = 'settings-row';
+
+      const label = document.createElement('span');
+      label.className = 'settings-label';
+      label.textContent = panelCount === 1 ? 'Shell' : `Terminal ${i + 1}`;
+      row.appendChild(label);
+
+      const select = document.createElement('select');
+      select.className = 'settings-select';
+
+      // Default option
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = 'auto';
+      defaultOpt.textContent = 'Default';
+      select.appendChild(defaultOpt);
+
+      for (const s of shells) {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.default ? `${s.name} (default)` : s.name;
+        select.appendChild(opt);
+      }
+
+      // Set current value
+      select.value = shellIds[i];
+      // If saved shell is no longer available, reset to auto
+      if (select.value !== shellIds[i]) {
+        shellIds[i] = 'auto';
+        this._values.shellConfig[layoutName] = shellIds;
+        window.storeAPI.set('shellConfig', this._values.shellConfig);
+        select.value = 'auto';
+      }
+
+      const panelIndex = i;
+      select.addEventListener('change', () => {
+        const currentLayout = this.layoutManager.currentLayout;
+        const newShellId = select.value;
+        // Update config
+        if (!this._values.shellConfig[currentLayout]) {
+          this._values.shellConfig[currentLayout] = [];
+        }
+        this._values.shellConfig[currentLayout][panelIndex] = newShellId;
+        window.storeAPI.set('shellConfig', this._values.shellConfig);
+
+        // Keep layout manager's cached shell IDs in sync
+        if (this.layoutManager._currentShellIds) {
+          this.layoutManager._currentShellIds[panelIndex] = newShellId;
+        }
+
+        // Update the terminal entry's shellId and restart just that terminal
+        const panels = this.layoutManager.panels;
+        if (panels[panelIndex]) {
+          const panelId = panels[panelIndex].panelId;
+          const entry = this.terminalManager.terminals.get(panelId);
+          if (entry) {
+            entry.shellId = newShellId;
+            this.terminalManager.restartPty(panelId);
+          }
+        }
+      });
+
+      row.appendChild(select);
+      container.appendChild(row);
+    }
+  }
+
+  async switchLayout(layoutName) {
+    const shellIds = this._getShellsForLayout(layoutName);
+    await this.layoutManager.setLayout(layoutName, shellIds);
+    window.storeAPI.set('layout', layoutName);
+    document.getElementById('layout-select').value = layoutName;
+
+    // Re-render shell dropdowns if settings is open
+    if (this.isOpen) {
+      await this._renderShellDropdowns();
+    }
   }
 }
 

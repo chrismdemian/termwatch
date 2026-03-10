@@ -4,7 +4,7 @@ const { ipcRenderer } = require('electron');
 // we can assign directly to window/global.
 
 window.terminalAPI = {
-  createPty: (cols, rows) => ipcRenderer.invoke('pty:create', { cols, rows }),
+  createPty: (cols, rows, shellId) => ipcRenderer.invoke('pty:create', { cols, rows, shellId }),
   getAvailableShells: () => ipcRenderer.invoke('pty:get-available-shells'),
   writePty: (id, data) => ipcRenderer.send('pty:write', id, data),
   resizePty: (id, cols, rows) => ipcRenderer.send('pty:resize', id, cols, rows),

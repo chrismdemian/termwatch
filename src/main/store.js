@@ -20,7 +20,7 @@ const store = new Store({
     defaultLayout: '1x1',
     startInVideoMode: false,
     isFullscreen: true,
-    shellType: 'auto',
+    shellConfig: {},
   },
 });
 

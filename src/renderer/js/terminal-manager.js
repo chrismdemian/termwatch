@@ -62,7 +62,7 @@ class TerminalManager {
     });
   }
 
-  async create(container, panelId) {
+  async create(container, panelId, shellId) {
     const terminal = new Terminal({
       allowTransparency: true,
       ...this._terminalDefaults,
@@ -87,7 +87,7 @@ class TerminalManager {
     console.log('[TermWatch] Terminal fitted. Cols:', terminal.cols, 'Rows:', terminal.rows);
 
     // Create PTY
-    const result = await window.terminalAPI.createPty(terminal.cols, terminal.rows);
+    const result = await window.terminalAPI.createPty(terminal.cols, terminal.rows, shellId);
     if (!result) {
       console.error('[TermWatch] Failed to create PTY');
       return null;
@@ -100,6 +100,7 @@ class TerminalManager {
       container,
       ptyId: result.id,
       panelId,
+      shellId: shellId || 'auto',
     };
     this.terminals.set(panelId, entry);
 
@@ -253,7 +254,8 @@ class TerminalManager {
       entry.terminal.clear();
       const result = await window.terminalAPI.createPty(
         entry.terminal.cols,
-        entry.terminal.rows
+        entry.terminal.rows,
+        entry.shellId
       );
       if (result) {
         entry.ptyId = result.id;
@@ -276,7 +278,8 @@ class TerminalManager {
     entry.terminal.clear();
     const result = await window.terminalAPI.createPty(
       entry.terminal.cols,
-      entry.terminal.rows
+      entry.terminal.rows,
+      entry.shellId
     );
     if (result) {
       entry.ptyId = result.id;
@@ -297,7 +300,7 @@ class TerminalManager {
       entry.terminal.clear();
       entry.terminal.reset();
       promises.push(
-        window.terminalAPI.createPty(entry.terminal.cols, entry.terminal.rows)
+        window.terminalAPI.createPty(entry.terminal.cols, entry.terminal.rows, entry.shellId)
           .then((result) => {
             if (result) {
               entry.ptyId = result.id;

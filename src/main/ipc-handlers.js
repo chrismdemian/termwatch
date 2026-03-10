@@ -297,14 +297,13 @@ function register() {
     return ptyManager.getAvailableShells();
   });
 
-  ipcMain.handle('pty:create', (e, { cols, rows }) => {
-    // Look up the user's preferred shell
+  ipcMain.handle('pty:create', (e, { cols, rows, shellId }) => {
+    // Look up shell by ID (per-terminal shell selection)
     let shell = null;
     let args = null;
-    const shellType = store.get('shellType');
-    if (shellType && shellType !== 'auto') {
+    if (shellId && shellId !== 'auto') {
       const shells = ptyManager.getAvailableShells();
-      const match = shells.find(s => s.id === shellType);
+      const match = shells.find(s => s.id === shellId);
       if (match) {
         shell = match.command;
         args = match.args;
