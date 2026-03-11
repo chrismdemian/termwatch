@@ -77,7 +77,9 @@ function createWindow() {
   // Load content
   const lastUrl = store.get('lastVideoUrl');
   if (lastUrl) {
+    videoView.webContents.setAudioMuted(true);
     videoView.webContents.loadURL(lastUrl);
+    ipcHandlers.setStartupPause(true);
   } else {
     videoView.webContents.loadFile(
       path.join(__dirname, '..', 'renderer', 'video.html')
