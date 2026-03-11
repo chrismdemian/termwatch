@@ -10,6 +10,29 @@ let trackedListeners = []; // [{ event, handler }] for cleanup
 let lastKnownDuration = 0;
 let rescanTimer = null;
 
+// --- Startup autoplay suppression ---
+let startupPauseActive = false;
+let startupPauseTimer = null;
+let startupPauseTimeout = null;
+let lastUserInteraction = 0;
+
+function clearStartupPause() {
+  startupPauseActive = false;
+  if (startupPauseTimer) {
+    clearInterval(startupPauseTimer);
+    startupPauseTimer = null;
+  }
+  if (startupPauseTimeout) {
+    clearTimeout(startupPauseTimeout);
+    startupPauseTimeout = null;
+  }
+}
+
+// Track user interactions to distinguish autoplay from user-initiated play
+document.addEventListener('click', () => { lastUserInteraction = Date.now(); }, true);
+document.addEventListener('keydown', () => { lastUserInteraction = Date.now(); }, true);
+document.addEventListener('pointerdown', () => { lastUserInteraction = Date.now(); }, true);
+
 /**
  * Find the best <video> element on the page.
  * Single-video pages short-circuit. Multi-video pages score by:
@@ -169,6 +192,7 @@ window.addEventListener('beforeunload', () => {
     clearInterval(rescanTimer);
     rescanTimer = null;
   }
+  clearStartupPause();
   detachVideoListeners();
   currentVideo = null;
   ipcRenderer.send('video:frame-deregister', { frameId });
@@ -177,6 +201,7 @@ window.addEventListener('beforeunload', () => {
 // --- IPC listeners for playback control ---
 // Commands arrive via frame.send() targeted to this specific frame
 ipcRenderer.on('video:play', () => {
+  clearStartupPause();
   const v = findVideo();
   if (v) v.play();
 });
@@ -187,6 +212,7 @@ ipcRenderer.on('video:pause', () => {
 });
 
 ipcRenderer.on('video:toggle-play', () => {
+  clearStartupPause();
   const v = findVideo();
   if (v) {
     if (v.paused) v.play();
@@ -213,6 +239,40 @@ ipcRenderer.on('video:seek-relative', (e, delta) => {
   const v = findVideo();
   if (v && isFinite(delta)) {
     v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + delta));
+  }
+});
+
+// --- Startup autoplay suppression handler ---
+// When the app restores a saved URL on startup, prevent the video from auto-playing.
+// Polls for playing videos and pauses them until the user explicitly initiates playback
+// (via our controls or by clicking the site's native play button).
+ipcRenderer.on('video:pause-autoplay', () => {
+  startupPauseActive = true;
+  if (startupPauseTimer) clearInterval(startupPauseTimer);
+  if (startupPauseTimeout) clearTimeout(startupPauseTimeout);
+
+  startupPauseTimer = setInterval(() => {
+    if (!startupPauseActive) {
+      clearInterval(startupPauseTimer);
+      startupPauseTimer = null;
+      return;
+    }
+    const v = findVideo();
+    if (v && !v.paused) {
+      // If user recently interacted, they clicked play intentionally — allow it
+      if (Date.now() - lastUserInteraction < 1000) {
+        clearStartupPause();
+      } else {
+        v.pause();
+      }
+    }
+  }, 100);
+
+  startupPauseTimeout = setTimeout(clearStartupPause, 30000);
+
+  // Pause immediately if a video is already playing
+  if (currentVideo && !currentVideo.paused) {
+    currentVideo.pause();
   }
 });
 
