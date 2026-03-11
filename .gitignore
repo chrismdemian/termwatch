@@ -6,3 +6,5 @@ out/
 *.AppImage
 .env
 *.log
+CLAUDE.md
+.claude/
