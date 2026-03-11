@@ -73,4 +73,5 @@ window.windowAPI = {
 window.storeAPI = {
   get: (key) => ipcRenderer.invoke('store:get', key),
   set: (key, value) => ipcRenderer.send('store:set', key, value),
+  clearAllData: () => ipcRenderer.invoke('app:clear-all-data'),
 };

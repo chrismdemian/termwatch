@@ -281,6 +281,16 @@ class Settings {
       this._values.startInVideoMode = startVideoModeToggle.checked;
       window.storeAPI.set('startInVideoMode', startVideoModeToggle.checked);
     });
+
+    // Clear all data
+    document.getElementById('setting-clear-all-data').addEventListener('click', async () => {
+      const confirmed = confirm(
+        'This will delete all settings, bookmarks, and browsing data (cookies, cache, login sessions).\n\nThe app will restart. Continue?'
+      );
+      if (!confirmed) return;
+      await window.storeAPI.clearAllData();
+      window.location.reload();
+    });
   }
 
   async open() {

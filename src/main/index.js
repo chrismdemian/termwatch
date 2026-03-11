@@ -66,6 +66,15 @@ function createWindow() {
   appView.setBackgroundColor('#00000000');
   baseWindow.contentView.addChildView(appView);
 
+  // Prevent app view from navigating to external URLs (defense-in-depth:
+  // nodeIntegration=true means any page it navigates to gets full Node.js access)
+  appView.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('file://')) {
+      event.preventDefault();
+    }
+  });
+  appView.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+
   // Set initial bounds
   updateViewBounds();
 
@@ -228,9 +237,27 @@ app.whenReady().then(async () => {
   await initDRM();
 
   // Set user agent to avoid bot detection on streaming sites
-  const defaultSession = session.fromPartition('persist:video');
-  const ua = defaultSession.getUserAgent().replace(/Electron\/\S+\s/, '');
-  defaultSession.setUserAgent(ua);
+  const videoSession = session.fromPartition('persist:video');
+  const ua = videoSession.getUserAgent().replace(/Electron\/\S+\s/, '');
+  videoSession.setUserAgent(ua);
+
+  // Permission handlers for video session — only allow what streaming sites need
+  const ALLOWED_PERMISSIONS = new Set([
+    'media',                    // Camera/mic
+    'mediaKeySystem',           // DRM (Widevine) — critical for streaming
+    'fullscreen',               // HTML5 fullscreen API
+    'pointerLock',              // Mouse capture (some video players)
+    'clipboard-sanitized-write', // Allow sites to copy to clipboard
+    'window-placement',         // Multi-monitor fullscreen
+  ]);
+
+  videoSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    callback(ALLOWED_PERMISSIONS.has(permission));
+  });
+
+  videoSession.setPermissionCheckHandler((webContents, permission) => {
+    return ALLOWED_PERMISSIONS.has(permission);
+  });
 
   createWindow();
 });
