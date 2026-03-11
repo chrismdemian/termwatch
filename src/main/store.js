@@ -1,5 +1,8 @@
 const Store = require('electron-store');
 
+// Note: This store is unencrypted JSON on disk. If sensitive data (API keys,
+// tokens) needs to be stored in the future, use Electron's safeStorage API.
+
 const store = new Store({
   defaults: {
     windowBounds: { x: undefined, y: undefined, width: 1280, height: 800 },

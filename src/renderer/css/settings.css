@@ -438,3 +438,27 @@
 .settings-action-btn:active {
   background: var(--surface-active);
 }
+
+/* Danger Button */
+.settings-danger-btn {
+  color: #e85c5c;
+  border-color: rgba(232, 92, 92, 0.3);
+}
+
+.settings-danger-btn:hover {
+  background: rgba(232, 92, 92, 0.1);
+  color: #ff6b6b;
+  border-color: rgba(232, 92, 92, 0.6);
+}
+
+.settings-danger-btn:active {
+  background: rgba(232, 92, 92, 0.2);
+}
+
+/* Hint Text */
+.settings-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}

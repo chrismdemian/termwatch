@@ -1,6 +1,18 @@
-const { ipcMain, screen } = require('electron');
+const { ipcMain, screen, session } = require('electron');
 const ptyManager = require('./pty-manager');
 const store = require('./store');
+
+/**
+ * Check if the IPC sender is the app view (local file://).
+ * Rejects messages from the video view or any injected scripts.
+ */
+function isFromAppView(event) {
+  try {
+    return (event.senderFrame?.url || '').startsWith('file://');
+  } catch {
+    return false;
+  }
+}
 
 let videoView = null;
 let appView = null;
@@ -293,11 +305,16 @@ function setupVideoModeKeyboard() {
 
 function register() {
   // --- PTY ---
-  ipcMain.handle('pty:get-available-shells', () => {
+  ipcMain.handle('pty:get-available-shells', (e) => {
+    if (!isFromAppView(e)) return [];
     return ptyManager.getAvailableShells();
   });
 
   ipcMain.handle('pty:create', (e, { cols, rows, shellId }) => {
+    if (!isFromAppView(e)) return null;
+    if (typeof cols !== 'number' || typeof rows !== 'number') return null;
+    if (cols < 1 || cols > 500 || rows < 1 || rows > 200) return null;
+    if (shellId !== undefined && typeof shellId !== 'string') return null;
     // Look up shell by ID (per-terminal shell selection)
     let shell = null;
     let args = null;
@@ -336,20 +353,29 @@ function register() {
   });
 
   ipcMain.on('pty:write', (e, id, data) => {
+    if (!isFromAppView(e)) return;
+    if (typeof id !== 'number' || typeof data !== 'string') return;
     ptyManager.writePty(id, data);
   });
 
   ipcMain.on('pty:resize', (e, id, cols, rows) => {
+    if (!isFromAppView(e)) return;
+    if (typeof id !== 'number') return;
+    if (typeof cols !== 'number' || typeof rows !== 'number') return;
+    if (cols < 1 || cols > 500 || rows < 1 || rows > 200) return;
     ptyManager.resizePty(id, cols, rows);
   });
 
   ipcMain.on('pty:destroy', (e, id) => {
+    if (!isFromAppView(e)) return;
+    if (typeof id !== 'number') return;
     ptyManager.destroyPty(id);
   });
 
   // --- Video frame coordination ---
   ipcMain.on('video:frame-register', (e, { frameId }) => {
     if (!e.senderFrame || e.senderFrame.isDestroyed()) return;
+    if (typeof frameId !== 'string' || frameId.length > 50) return;
     const now = Date.now();
     videoFrames.set(frameId, {
       webFrame: e.senderFrame,
@@ -361,6 +387,8 @@ function register() {
   });
 
   ipcMain.on('video:frame-update', (e, { frameId, duration }) => {
+    if (typeof frameId !== 'string') return;
+    if (duration !== undefined && typeof duration !== 'number') return;
     const info = videoFrames.get(frameId);
     if (info) {
       info.duration = duration || info.duration;
@@ -370,6 +398,7 @@ function register() {
   });
 
   ipcMain.on('video:frame-deregister', (e, { frameId }) => {
+    if (typeof frameId !== 'string') return;
     const wasActive = frameId === activeFrameId;
     videoFrames.delete(frameId);
     if (wasActive) {
@@ -379,6 +408,9 @@ function register() {
 
   // --- Video ---
   ipcMain.on('video:navigate', (e, url) => {
+    if (!isFromAppView(e)) return;
+    if (typeof url !== 'string' || url.length > 2048) return;
+    if (!/^https?:\/\//i.test(url)) return;
     if (videoView && !videoView.webContents.isDestroyed()) {
       videoView.webContents.loadURL(url);
     }
@@ -407,6 +439,7 @@ function register() {
   });
 
   ipcMain.on('video:state', (e, state) => {
+    if (!state || typeof state !== 'object') return;
     // Only forward state from the active frame to the app view.
     // Grace period: accept state from any frame that registered in the last 2s
     // and hasn't reported duration yet (content frames may not have become active yet).
@@ -441,6 +474,8 @@ function register() {
 
   // --- Video mode toggle ---
   ipcMain.on('toggle-video-mode', (e, enabled) => {
+    if (!isFromAppView(e)) return;
+    if (typeof enabled !== 'boolean') return;
     if (!appView || !videoView) return;
     videoModeActive = enabled;
     if (enabled) {
@@ -475,11 +510,13 @@ function register() {
   });
 
   // --- Window controls ---
-  ipcMain.on('window:minimize', () => {
+  ipcMain.on('window:minimize', (e) => {
+    if (!isFromAppView(e)) return;
     if (baseWindow) baseWindow.minimize();
   });
 
-  ipcMain.on('window:maximize', () => {
+  ipcMain.on('window:maximize', (e) => {
+    if (!isFromAppView(e)) return;
     if (!baseWindow) return;
     // Exit manual fullscreen first to avoid conflicting window geometry
     if (manualFullscreen) leaveFullscreen();
@@ -490,45 +527,68 @@ function register() {
     }
   });
 
-  ipcMain.on('window:close', () => {
+  ipcMain.on('window:close', (e) => {
+    if (!isFromAppView(e)) return;
     if (baseWindow) baseWindow.close();
   });
 
-  ipcMain.handle('window:is-maximized', () => {
+  ipcMain.handle('window:is-maximized', (e) => {
+    if (!isFromAppView(e)) return false;
     return baseWindow ? baseWindow.isMaximized() : false;
   });
 
-  ipcMain.on('window:toggle-fullscreen', () => {
+  ipcMain.on('window:toggle-fullscreen', (e) => {
+    if (!isFromAppView(e)) return;
     toggleFullscreen();
   });
 
-  ipcMain.handle('window:is-fullscreen', () => {
+  ipcMain.handle('window:is-fullscreen', (e) => {
+    if (!isFromAppView(e)) return false;
     return manualFullscreen;
   });
 
   ipcMain.on('window:move-by', (e, dx, dy) => {
+    if (!isFromAppView(e)) return;
     if (!baseWindow || baseWindow.isDestroyed()) return;
     if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
     const [x, y] = baseWindow.getPosition();
     baseWindow.setPosition(x + dx, y + dy);
   });
 
-  ipcMain.handle('get-platform', () => process.platform);
+  ipcMain.handle('get-platform', (e) => {
+    if (!isFromAppView(e)) return null;
+    return process.platform;
+  });
 
   // --- Store ---
   ipcMain.handle('store:get', (e, key) => {
+    if (!isFromAppView(e)) return undefined;
+    if (typeof key !== 'string') return undefined;
     return store.get(key);
   });
 
   ipcMain.on('store:set', (e, key, value) => {
+    if (!isFromAppView(e)) return;
+    if (typeof key !== 'string') return;
     store.set(key, value);
   });
 
-  // --- Video URL updates ---
+  // --- Video URL updates (from renderer forwarding navigation events) ---
   ipcMain.on('video:url-updated', (e, url) => {
+    if (typeof url !== 'string') return;
     if (appView && !appView.webContents.isDestroyed()) {
       appView.webContents.send('video:url-updated', url);
     }
+  });
+
+  // --- Clear all data ---
+  ipcMain.handle('app:clear-all-data', async (e) => {
+    if (!isFromAppView(e)) return false;
+    store.clear();
+    const videoSession = session.fromPartition('persist:video');
+    await videoSession.clearStorageData();
+    await videoSession.clearCache();
+    return true;
   });
 
   // --- Stale frame cleanup ---

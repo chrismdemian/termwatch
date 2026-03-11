@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TermWatch</title>
   <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
@@ -264,6 +265,18 @@
             <span class="settings-toggle-track"></span>
           </label>
         </div>
+      </div>
+
+      <!-- Data Section -->
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <div class="settings-row">
+          <span class="settings-label">Clear All Data</span>
+          <button class="settings-action-btn settings-danger-btn" id="setting-clear-all-data">
+            Clear Everything
+          </button>
+        </div>
+        <p class="settings-hint">Removes all settings, bookmarks, and browsing data. The app will restart.</p>
       </div>
     </div>
   </div>
