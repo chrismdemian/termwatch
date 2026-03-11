@@ -19,6 +19,8 @@ let appView = null;
 let baseWindow = null;
 let videoModeActive = false;
 let overlayCssKey = null; // key from webContents.insertCSS, used for removal
+let startupPauseActive = false;
+let startupPauseTimeout = null;
 
 // --- Manual fullscreen simulation ---
 // BaseWindow.setFullScreen() silently fails on transparent frameless windows on Windows.
@@ -67,6 +69,30 @@ function notifyFullscreenChanged(isFs) {
       appView.webContents.send('window:fullscreen-changed', isFs);
     }
   } catch (e) { /* disposed during shutdown */ }
+}
+
+function setStartupPause(active) {
+  if (active) {
+    startupPauseActive = true;
+    if (startupPauseTimeout) clearTimeout(startupPauseTimeout);
+    startupPauseTimeout = setTimeout(clearStartupPauseMain, 30000);
+  } else {
+    clearStartupPauseMain();
+  }
+}
+
+function clearStartupPauseMain() {
+  if (!startupPauseActive) return;
+  startupPauseActive = false;
+  if (startupPauseTimeout) {
+    clearTimeout(startupPauseTimeout);
+    startupPauseTimeout = null;
+  }
+  // Unmute video — audio was muted at startup to prevent sound leaking
+  // before the autoplay suppression in the preload could pause the video
+  if (videoView && !videoView.webContents.isDestroyed()) {
+    videoView.webContents.setAudioMuted(false);
+  }
 }
 
 // Overlay CSS injected via webContents.insertCSS to bypass Trusted Types CSP
@@ -300,6 +326,10 @@ function setupVideoModeKeyboard() {
     if (videoModeActive && !videoView.webContents.isDestroyed()) {
       videoView.webContents.send('video:show-exit-overlay');
     }
+    // Send startup pause signal to main frame after page load
+    if (startupPauseActive && !videoView.webContents.isDestroyed()) {
+      videoView.webContents.send('video:pause-autoplay');
+    }
   });
 }
 
@@ -384,6 +414,11 @@ function register() {
       registeredAt: now,
     });
     selectActiveFrame();
+
+    // Send startup pause signal to newly registered frame
+    if (startupPauseActive && e.senderFrame && !e.senderFrame.isDestroyed()) {
+      e.senderFrame.send('video:pause-autoplay');
+    }
   });
 
   ipcMain.on('video:frame-update', (e, { frameId, duration }) => {
@@ -411,6 +446,7 @@ function register() {
     if (!isFromAppView(e)) return;
     if (typeof url !== 'string' || url.length > 2048) return;
     if (!/^https?:\/\//i.test(url)) return;
+    clearStartupPauseMain();
     if (videoView && !videoView.webContents.isDestroyed()) {
       videoView.webContents.loadURL(url);
     }
@@ -429,6 +465,10 @@ function register() {
   });
 
   ipcMain.on('video:command', (e, cmd) => {
+    // Clear startup pause on user-initiated playback
+    if (cmd.type === 'video:play' || cmd.type === 'video:toggle-play') {
+      clearStartupPauseMain();
+    }
     // Route command to the active video frame
     if (!sendToActiveFrame(cmd.type, cmd.data)) {
       // Fallback: send to video view's main frame (legacy behavior)
@@ -623,8 +663,9 @@ function cleanup() {
     clearInterval(staleCleanupInterval);
     staleCleanupInterval = null;
   }
+  clearStartupPauseMain();
   videoFrames.clear();
   activeFrameId = null;
 }
 
-module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup, enterFullscreen, leaveFullscreen, toggleFullscreen, isFullscreen };
+module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup, enterFullscreen, leaveFullscreen, toggleFullscreen, isFullscreen, setStartupPause };
