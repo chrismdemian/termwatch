@@ -8,3 +8,5 @@ out/
 *.log
 CLAUDE.md
 .claude/
+test-results/
+playwright-report/
