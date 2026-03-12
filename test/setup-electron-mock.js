@@ -12,6 +12,13 @@ import Module from 'module';
 const handlers = new Map();
 const listeners = new Map();
 
+// --- session mock with trackable calls ---
+let sessionMock = {
+  clearStorageData: async () => {},
+  clearCache: async () => {},
+  webRequest: { onBeforeSendHeaders: () => {} },
+};
+
 const electronMock = {
   ipcMain: {
     handle: (ch, h) => { handlers.set(ch, h); },
@@ -27,14 +34,21 @@ const electronMock = {
     }),
   },
   session: {
-    fromPartition: () => ({
-      clearStorageData: async () => {},
-      clearCache: async () => {},
-      webRequest: { onBeforeSendHeaders: () => {} },
-    }),
+    fromPartition: () => sessionMock,
   },
   _handlers: handlers,
   _listeners: listeners,
+  _reset() {
+    handlers.clear();
+    listeners.clear();
+  },
+  _resetSessionMock() {
+    sessionMock = {
+      clearStorageData: async () => {},
+      clearCache: async () => {},
+      webRequest: { onBeforeSendHeaders: () => {} },
+    };
+  },
 };
 
 // --- electron-store mock ---

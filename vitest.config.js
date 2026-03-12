@@ -18,6 +18,14 @@ export default defineConfig({
           environment: 'happy-dom',
         },
       },
+      {
+        test: {
+          name: 'integration',
+          include: ['test/integration/**/*.test.js'],
+          environment: 'node',
+          setupFiles: ['test/setup-electron-mock.js'],
+        },
+      },
     ],
   },
 });

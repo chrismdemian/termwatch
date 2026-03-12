@@ -279,13 +279,21 @@ class TerminalManager {
 
     const overlay = document.createElement('div');
     overlay.className = 'pty-exit-overlay';
-    overlay.innerHTML = `
-      <span>Shell exited (code ${exitCode})</span>
-      <button class="btn restart-btn">Restart Shell</button>
-      <button class="btn close-btn">Close Panel</button>
-    `;
 
-    overlay.querySelector('.restart-btn').addEventListener('click', async () => {
+    const span = document.createElement('span');
+    span.textContent = `Shell exited (code ${exitCode})`;
+
+    const restartBtn = document.createElement('button');
+    restartBtn.className = 'btn restart-btn';
+    restartBtn.textContent = 'Restart Shell';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn close-btn';
+    closeBtn.textContent = 'Close Panel';
+
+    overlay.append(span, restartBtn, closeBtn);
+
+    restartBtn.addEventListener('click', async () => {
       overlay.remove();
       entry.terminal.clear();
       const result = await window.terminalAPI.createPty(
@@ -298,7 +306,7 @@ class TerminalManager {
       }
     });
 
-    overlay.querySelector('.close-btn').addEventListener('click', () => {
+    closeBtn.addEventListener('click', () => {
       if (window._layoutManager) {
         window._layoutManager.removePanel(panelId);
       }

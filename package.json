@@ -10,6 +10,7 @@
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "audit": "npm audit --audit-level=high",
+    "lint": "eslint src/",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -31,6 +32,9 @@
     "@electron/rebuild": "3.7.2",
     "electron": "https://github.com/castlabs/electron-releases#v40.7.0+wvcus",
     "electron-builder": "25.1.8",
+    "eslint": "^10.0.3",
+    "eslint-plugin-no-unsanitized": "^4.1.5",
+    "eslint-plugin-security": "^4.0.0",
     "happy-dom": "^20.8.3",
     "vitest": "^4.0.18"
   }
