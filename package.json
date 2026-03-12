@@ -28,7 +28,7 @@
     "tree-kill": "1.2.2"
   },
   "devDependencies": {
-    "@electron/rebuild": "3.7.2",
+    "@electron/rebuild": "4.0.3",
     "electron": "https://github.com/castlabs/electron-releases#v40.7.0+wvcus",
     "electron-builder": "25.1.8",
     "happy-dom": "^20.8.3",
