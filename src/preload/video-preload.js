@@ -175,6 +175,7 @@ window.addEventListener('beforeunload', () => {
     clearInterval(rescanTimer);
     rescanTimer = null;
   }
+  observer.disconnect();
   clearStartupPause();
   detachVideoListeners();
   currentVideo = null;

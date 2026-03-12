@@ -4,6 +4,8 @@ const log = require('./logger');
 let autoUpdater = null;
 let appViewRef = null;
 let checkInterval = null;
+let consecutiveFailures = 0;
+let retryTimeout = null;
 
 function initAutoUpdater(appView) {
   // Skip in development mode
@@ -105,11 +107,29 @@ function initAutoUpdater(appView) {
 function checkForUpdates() {
   if (!autoUpdater) return;
   try {
-    autoUpdater.checkForUpdates().catch((err) => {
-      log.warn('Update check failed:', err.message);
-    });
+    autoUpdater.checkForUpdates()
+      .then(() => {
+        consecutiveFailures = 0;
+      })
+      .catch((err) => {
+        log.warn('Update check failed:', err.message);
+        scheduleRetry();
+      });
   } catch (e) {
     log.warn('Update check error:', e.message);
+    scheduleRetry();
+  }
+}
+
+function scheduleRetry() {
+  if (retryTimeout) clearTimeout(retryTimeout);
+  consecutiveFailures++;
+  if (consecutiveFailures <= 3) {
+    log.info(`Scheduling update retry ${consecutiveFailures}/3 in 30 minutes`);
+    retryTimeout = setTimeout(() => {
+      retryTimeout = null;
+      checkForUpdates();
+    }, 30 * 60 * 1000);
   }
 }
 
@@ -135,6 +155,10 @@ function cleanup() {
   if (checkInterval) {
     clearInterval(checkInterval);
     checkInterval = null;
+  }
+  if (retryTimeout) {
+    clearTimeout(retryTimeout);
+    retryTimeout = null;
   }
   autoUpdater = null;
   appViewRef = null;

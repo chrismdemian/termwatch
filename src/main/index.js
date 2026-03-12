@@ -156,13 +156,27 @@ function createWindow() {
     if (appView && !appView.webContents.isDestroyed()) {
       appView.webContents.send('video:url-updated', url);
     }
-    store.set('lastVideoUrl', url);
+    if (!url.startsWith('file://')) {
+      saveLastVideoUrlDebounced(url);
+    }
   });
   videoView.webContents.on('did-navigate-in-page', (e, url) => {
     if (appView && !appView.webContents.isDestroyed()) {
       appView.webContents.send('video:url-updated', url);
     }
-    store.set('lastVideoUrl', url);
+    if (!url.startsWith('file://')) {
+      saveLastVideoUrlDebounced(url);
+    }
+  });
+
+  // Show local error page when video view fails to load (e.g. offline)
+  videoView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    if (!isMainFrame || errorCode === -3) return; // Ignore aborted navigations
+    if (validatedURL.endsWith('video-error.html')) return; // Prevent infinite loop
+    log.warn(`Video view load failed: ${errorDescription} (${errorCode}) for ${validatedURL}`);
+    videoView.webContents.loadFile(
+      path.join(__dirname, '..', 'renderer', 'video-error.html')
+    );
   });
 
   // Handle new window requests (OAuth popups etc.)
@@ -287,6 +301,29 @@ function saveBoundsDebounced() {
   }, 1000);
 }
 
+let pendingVideoUrl = null;
+let videoUrlTimeout = null;
+function saveLastVideoUrlDebounced(url) {
+  pendingVideoUrl = url;
+  if (videoUrlTimeout) clearTimeout(videoUrlTimeout);
+  videoUrlTimeout = setTimeout(() => {
+    store.set('lastVideoUrl', pendingVideoUrl);
+    pendingVideoUrl = null;
+    videoUrlTimeout = null;
+  }, 2000);
+}
+
+function flushPendingVideoUrl() {
+  if (videoUrlTimeout) {
+    clearTimeout(videoUrlTimeout);
+    videoUrlTimeout = null;
+  }
+  if (pendingVideoUrl !== null) {
+    store.set('lastVideoUrl', pendingVideoUrl);
+    pendingVideoUrl = null;
+  }
+}
+
 app.whenReady().then(async () => {
   await initDRM();
 
@@ -336,6 +373,9 @@ app.on('before-quit', async (event) => {
     const bounds = baseWindow.getBounds();
     store.set('windowBounds', bounds);
   }
+
+  // Flush debounced video URL before shutdown
+  flushPendingVideoUrl();
 
   // Clean up IPC handlers and intervals
   ipcHandlers.cleanup();

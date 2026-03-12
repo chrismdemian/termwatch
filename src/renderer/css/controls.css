@@ -203,6 +203,21 @@ input[type="range"]:active::-webkit-slider-thumb {
   border-color: transparent;
 }
 
+/* Offline indicator */
+.offline-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  animation: offline-pulse 2s ease-in-out infinite;
+}
+
+@keyframes offline-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 /* Update indicator dot on settings button */
 .ctrl-btn.has-update {
   position: relative;

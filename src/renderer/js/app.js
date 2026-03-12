@@ -55,6 +55,17 @@ async function init() {
       if (settingsBtn) settingsBtn.classList.add('has-update');
     });
 
+    // Offline indicator
+    const offlineIndicator = document.getElementById('offline-indicator');
+    if (offlineIndicator) {
+      const updateOnlineStatus = () => {
+        offlineIndicator.classList.toggle('hidden', navigator.onLine);
+      };
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+    }
+
     log.info('Init complete. Terminals:', terminalManager.terminals.size);
   } catch (err) {
     log.error('Init failed:', err);

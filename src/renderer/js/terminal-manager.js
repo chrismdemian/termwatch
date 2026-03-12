@@ -118,9 +118,10 @@ class TerminalManager {
     });
 
     // Focus tracking
-    terminal.onFocus = terminal.textarea?.addEventListener('focus', () => {
+    entry.focusHandler = () => {
       this._setFocused(panelId);
-    });
+    };
+    terminal.textarea?.addEventListener('focus', entry.focusHandler);
 
     // ResizeObserver for auto-fit
     const ro = new ResizeObserver(() => {
@@ -173,6 +174,9 @@ class TerminalManager {
     if (!entry) return;
 
     if (entry.resizeObserver) entry.resizeObserver.disconnect();
+    if (entry.focusHandler && entry.terminal.textarea) {
+      entry.terminal.textarea.removeEventListener('focus', entry.focusHandler);
+    }
     window.terminalAPI.destroyPty(entry.ptyId);
     entry.terminal.dispose();
     this.terminals.delete(panelId);
@@ -188,6 +192,12 @@ class TerminalManager {
     for (const id of [...this.terminals.keys()]) {
       this.destroy(id);
     }
+  }
+
+  dispose() {
+    this.destroyAll();
+    if (this._dataCleanup) { this._dataCleanup(); this._dataCleanup = null; }
+    if (this._exitCleanup) { this._exitCleanup(); this._exitCleanup = null; }
   }
 
   fitAll() {
@@ -313,12 +323,6 @@ class TerminalManager {
     });
 
     panel.appendChild(overlay);
-  }
-
-  restartAll() {
-    for (const panelId of this.terminals.keys()) {
-      this.restartPty(panelId);
-    }
   }
 
   async restartPty(panelId) {
