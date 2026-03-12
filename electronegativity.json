@@ -1,0 +1,23 @@
+{
+  "_comment": "Electronegativity suppressions for TermWatch. Documents known-acceptable security findings.",
+  "suppressions": {
+    "CSP_GLOBAL_CHECK": {
+      "severity": "MEDIUM",
+      "reason": "App view loads only local file:// HTML. Video view loads untrusted content but has contextIsolation=true and nodeIntegration=false. CSP for video view is managed by the target sites themselves."
+    },
+    "LIMIT_NAVIGATION_GLOBAL_CHECK": {
+      "severity": "HIGH",
+      "reason": "Video view intentionally navigates to user-provided URLs (streaming sites). Navigation is validated in ipc-handlers.js (https-only, max 2048 chars). App view loads only file:// URLs and does not navigate."
+    },
+    "PERMISSION_REQUEST_HANDLER_GLOBAL_CHECK": {
+      "severity": "MEDIUM",
+      "reason": "Video view partition 'persist:video' uses default permissions. DRM content requires media key system access. A permission handler could be added in a future phase to restrict non-essential permissions."
+    }
+  },
+  "known_architectural_decisions": {
+    "nodeIntegration_appView": "App view uses nodeIntegration=true because xterm.js Terminal class constructors cannot pass through Electron's contextBridge (structured clone fails on class instances).",
+    "contextIsolation_appView": "App view uses contextIsolation=false for the same xterm.js reason. This view loads only local file:// HTML, never untrusted content.",
+    "sandbox_disabled": "Sandbox is disabled because node-pty requires Node.js native module access to spawn pseudo-terminal processes."
+  },
+  "parsing_note": "Per-file atomic checks may fail with 'Invalid Version' because TermWatch uses the CastLabs Electron fork (git URL in package.json, not a semver-parseable version). Global checks run successfully."
+}
