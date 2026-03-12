@@ -23,6 +23,7 @@ const store = new Store({
     autoHideDelay: 3000,
     defaultLayout: '1x1',
     startInVideoMode: false,
+    disableHardwareAcceleration: false,
     isFullscreen: true,
     shellConfig: {},
   },
