@@ -34,7 +34,7 @@
   <div id="terminal-area" class="terminal-area"></div>
 
   <!-- Video Mode Indicator -->
-  <div id="video-mode-indicator" class="video-mode-indicator hidden">
+  <div id="video-mode-indicator" class="video-mode-indicator hidden" role="status" aria-live="polite">
     Press <kbd>Ctrl+Shift+V</kbd> to return to terminals
   </div>
 
@@ -52,7 +52,7 @@
     <button class="ctrl-btn" id="btn-forward" title="Forward">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
-    <input type="text" class="url-input" id="url-input" placeholder="Enter URL..." spellcheck="false">
+    <input type="text" class="url-input" id="url-input" placeholder="Enter URL..." spellcheck="false" aria-label="URL">
 
     <div class="ctrl-separator"></div>
 
@@ -64,7 +64,7 @@
 
     <!-- Seek -->
     <span class="time-display" id="time-current">0:00</span>
-    <input type="range" class="seek-bar" id="seek-bar" min="0" max="100" value="0" step="any">
+    <input type="range" class="seek-bar" id="seek-bar" min="0" max="100" value="0" step="any" aria-label="Seek">
     <span class="time-display" id="time-duration">0:00</span>
 
     <div class="ctrl-separator"></div>
@@ -74,12 +74,12 @@
       <svg id="icon-volume-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
       <svg id="icon-volume-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
     </button>
-    <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" value="1" step="0.01">
+    <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" value="1" step="0.01" aria-label="Volume">
 
     <div class="ctrl-separator"></div>
 
     <!-- Layout -->
-    <select class="layout-select" id="layout-select">
+    <select class="layout-select" id="layout-select" aria-label="Terminal layout">
       <option value="1x1">1x1</option>
       <option value="1x2">1x2</option>
       <option value="2x1">2x1</option>
@@ -125,17 +125,17 @@
   <!-- Bookmarks Bar -->
   <div id="bookmarks-bar" class="bookmarks-bar hidden">
     <div class="bookmarks-list" id="bookmarks-list"></div>
-    <button class="bookmark-add-btn" id="btn-add-bookmark" title="Add bookmark">
+    <button class="bookmark-add-btn" id="btn-add-bookmark" title="Add bookmark" aria-label="Add bookmark">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </div>
 
   <!-- Settings Modal -->
-  <div id="settings-overlay" class="settings-overlay">
+  <div id="settings-overlay" class="settings-overlay" role="dialog" aria-modal="true" aria-label="Settings">
     <div class="settings-modal" id="settings-modal">
       <div class="settings-header">
         <span class="settings-title">Settings</span>
-        <button class="settings-close-btn" id="settings-close-btn">
+        <button class="settings-close-btn" id="settings-close-btn" aria-label="Close settings">
           <svg width="12" height="12" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
         </button>
       </div>
@@ -149,7 +149,7 @@
         <div class="settings-row">
           <span class="settings-label">Opacity</span>
           <div class="settings-slider-group">
-            <input type="range" class="settings-slider" id="setting-opacity" min="0" max="1" value="0.3" step="0.01">
+            <input type="range" class="settings-slider" id="setting-opacity" min="0" max="1" value="0.3" step="0.01" aria-label="Opacity">
             <span class="settings-slider-value" id="setting-opacity-value">30%</span>
           </div>
         </div>
@@ -157,7 +157,7 @@
         <div class="settings-row">
           <span class="settings-label">Shadow Intensity</span>
           <div class="settings-slider-group">
-            <input type="range" class="settings-slider" id="setting-shadow-intensity" min="0" max="1" value="1" step="0.01">
+            <input type="range" class="settings-slider" id="setting-shadow-intensity" min="0" max="1" value="1" step="0.01" aria-label="Shadow intensity">
             <span class="settings-slider-value" id="setting-shadow-intensity-value">100%</span>
           </div>
         </div>
@@ -166,14 +166,14 @@
           <span class="settings-label">Font Size</span>
           <div class="settings-stepper">
             <button class="settings-stepper-btn" data-target="setting-font-size" data-delta="-1">-</button>
-            <input type="number" class="settings-number" id="setting-font-size" min="8" max="32" value="14">
+            <input type="number" class="settings-number" id="setting-font-size" min="8" max="32" value="14" aria-label="Font size">
             <button class="settings-stepper-btn" data-target="setting-font-size" data-delta="1">+</button>
           </div>
         </div>
 
         <div class="settings-row">
           <span class="settings-label">Font Family</span>
-          <select class="settings-select" id="setting-font-family">
+          <select class="settings-select" id="setting-font-family" aria-label="Font family">
             <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
             <option value="'Cascadia Code', monospace">Cascadia Code</option>
             <option value="'Fira Code', monospace">Fira Code</option>
@@ -185,16 +185,16 @@
         <div class="settings-row">
           <span class="settings-label">Text Color</span>
           <div class="settings-color-group">
-            <button class="settings-color-trigger" id="setting-text-color-trigger"></button>
-            <input type="text" class="settings-color-hex" id="setting-text-color-hex" value="#e8e6e3" maxlength="7" spellcheck="false">
+            <button class="settings-color-trigger" id="setting-text-color-trigger" aria-label="Pick text color"></button>
+            <input type="text" class="settings-color-hex" id="setting-text-color-hex" value="#e8e6e3" maxlength="7" spellcheck="false" aria-label="Text color hex">
           </div>
         </div>
 
         <div class="settings-row">
           <span class="settings-label">Selection Color</span>
           <div class="settings-color-group">
-            <button class="settings-color-trigger" id="setting-selection-color-trigger"></button>
-            <input type="text" class="settings-color-hex" id="setting-selection-color-hex" value="#d4915e" maxlength="7" spellcheck="false">
+            <button class="settings-color-trigger" id="setting-selection-color-trigger" aria-label="Pick selection color"></button>
+            <input type="text" class="settings-color-hex" id="setting-selection-color-hex" value="#d4915e" maxlength="7" spellcheck="false" aria-label="Selection color hex">
           </div>
         </div>
 
@@ -210,7 +210,7 @@
         <div class="settings-row">
           <span class="settings-label">Cursor Blink</span>
           <label class="settings-toggle">
-            <input type="checkbox" id="setting-cursor-blink" checked>
+            <input type="checkbox" id="setting-cursor-blink" checked aria-label="Cursor blink">
             <span class="settings-toggle-track"></span>
           </label>
         </div>
@@ -219,7 +219,7 @@
           <span class="settings-label">Scrollback Lines</span>
           <div class="settings-stepper">
             <button class="settings-stepper-btn" data-target="setting-scrollback" data-delta="-100">-</button>
-            <input type="number" class="settings-number" id="setting-scrollback" min="100" max="50000" value="1000" step="100">
+            <input type="number" class="settings-number" id="setting-scrollback" min="100" max="50000" value="1000" step="100" aria-label="Scrollback lines">
             <button class="settings-stepper-btn" data-target="setting-scrollback" data-delta="100">+</button>
           </div>
         </div>
@@ -238,7 +238,7 @@
 
         <div class="settings-row">
           <span class="settings-label">Auto-hide Controls</span>
-          <select class="settings-select" id="setting-auto-hide-delay">
+          <select class="settings-select" id="setting-auto-hide-delay" aria-label="Auto-hide controls delay">
             <option value="0">Disabled</option>
             <option value="2000">2 seconds</option>
             <option value="3000" selected>3 seconds</option>
@@ -249,7 +249,7 @@
 
         <div class="settings-row">
           <span class="settings-label">Default Layout</span>
-          <select class="settings-select" id="setting-default-layout">
+          <select class="settings-select" id="setting-default-layout" aria-label="Default layout">
             <option value="1x1">1x1</option>
             <option value="1x2">1x2</option>
             <option value="2x1">2x1</option>
@@ -261,7 +261,7 @@
         <div class="settings-row">
           <span class="settings-label">Start in Video Mode</span>
           <label class="settings-toggle">
-            <input type="checkbox" id="setting-start-video-mode">
+            <input type="checkbox" id="setting-start-video-mode" aria-label="Start in video mode">
             <span class="settings-toggle-track"></span>
           </label>
         </div>
@@ -269,7 +269,7 @@
         <div class="settings-row">
           <span class="settings-label">Disable Hardware Acceleration</span>
           <label class="settings-toggle">
-            <input type="checkbox" id="setting-disable-gpu">
+            <input type="checkbox" id="setting-disable-gpu" aria-label="Disable hardware acceleration">
             <span class="settings-toggle-track"></span>
           </label>
         </div>
