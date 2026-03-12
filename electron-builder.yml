@@ -13,6 +13,7 @@ directories:
 
 files:
   - src/**/*
+  - THIRD-PARTY-LICENSES.txt
   - "!**/*.map"
 
 asar: true
@@ -31,6 +32,12 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   runAfterFinish: true
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  license: LICENSE
+  deleteAppDataOnUninstall: true
+  uninstallDisplayName: TermWatch
 
 mac:
   target:

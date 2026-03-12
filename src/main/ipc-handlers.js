@@ -1,5 +1,6 @@
-const { ipcMain, screen, session } = require('electron');
+const { app, ipcMain, screen, session } = require('electron');
 const ptyManager = require('./pty-manager');
+const updater = require('./updater');
 const store = require('./store');
 const log = require('./logger');
 
@@ -628,6 +629,23 @@ function register() {
     if (appView && !appView.webContents.isDestroyed()) {
       appView.webContents.send('video:url-updated', url);
     }
+  });
+
+  // --- App version ---
+  ipcMain.handle('app:get-version', (e) => {
+    if (!isFromAppView(e)) return null;
+    return app.getVersion();
+  });
+
+  // --- Auto-update ---
+  ipcMain.on('app:download-update', (e) => {
+    if (!isFromAppView(e)) return;
+    updater.downloadUpdate();
+  });
+
+  ipcMain.on('app:install-update', (e) => {
+    if (!isFromAppView(e)) return;
+    updater.installUpdate();
   });
 
   // --- Clear all data ---

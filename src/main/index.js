@@ -6,6 +6,7 @@ const path = require('path');
 const store = require('./store');
 const ipcHandlers = require('./ipc-handlers');
 const ptyManager = require('./pty-manager');
+const updater = require('./updater');
 
 // Force dark theme for native Chromium UI (color picker, input spinners, etc.)
 nativeTheme.themeSource = 'dark';
@@ -141,6 +142,9 @@ function createWindow() {
     path.join(__dirname, '..', 'renderer', 'app.html')
   );
   log.info('App view loaded');
+
+  // Initialize auto-updater
+  updater.initAutoUpdater(appView);
 
   // Handle video view navigation events
   videoView.webContents.on('did-navigate', (e, url) => {
@@ -331,6 +335,7 @@ app.on('before-quit', async (event) => {
 
   // Clean up IPC handlers and intervals
   ipcHandlers.cleanup();
+  updater.cleanup();
 
   // Destroy all PTY processes with timeout
   try {

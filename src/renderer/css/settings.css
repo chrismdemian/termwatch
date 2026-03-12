@@ -462,3 +462,55 @@
   margin: 4px 0 0;
   line-height: 1.4;
 }
+
+/* Version Display */
+.settings-version {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Update Banner */
+.settings-update-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  background: rgba(212, 145, 94, 0.1);
+  border: 1px solid rgba(212, 145, 94, 0.3);
+  border-radius: 8px;
+}
+
+.settings-update-banner.visible {
+  display: flex;
+}
+
+.settings-update-banner .update-label {
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.settings-update-banner .update-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: white;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) ease-out;
+}
+
+.settings-update-banner .update-btn:hover {
+  opacity: 0.85;
+}
+
+.settings-update-banner .update-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

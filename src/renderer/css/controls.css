@@ -202,3 +202,20 @@ input[type="range"]:active::-webkit-slider-thumb {
   color: white;
   border-color: transparent;
 }
+
+/* Update indicator dot on settings button */
+.ctrl-btn.has-update {
+  position: relative;
+}
+
+.ctrl-btn.has-update::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #e89040;
+  border-radius: 50%;
+  border: 1px solid var(--bg-deep);
+}

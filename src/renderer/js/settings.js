@@ -1,3 +1,4 @@
+const { ipcRenderer } = require('electron');
 const Pickr = require('@simonwep/pickr');
 const { hexToRgba, normalizeHex } = require('./settings-utils');
 
@@ -293,6 +294,26 @@ class Settings {
       alert('Hardware acceleration setting changed. Please restart the app for this to take effect.');
     });
 
+    // Update download/install button
+    const updateBtn = document.getElementById('update-download-btn');
+    if (updateBtn) {
+      updateBtn.addEventListener('click', () => {
+        if (updateBtn.dataset.state === 'install') {
+          ipcRenderer.send('app:install-update');
+        } else {
+          ipcRenderer.send('app:download-update');
+          updateBtn.textContent = 'Downloading...';
+          updateBtn.disabled = true;
+          // Listen for download completion to switch to Install
+          ipcRenderer.once('app:update-downloaded', () => {
+            updateBtn.textContent = 'Install & Restart';
+            updateBtn.disabled = false;
+            updateBtn.dataset.state = 'install';
+          });
+        }
+      });
+    }
+
     // Clear all data
     document.getElementById('setting-clear-all-data').addEventListener('click', async () => {
       const confirmed = confirm(
@@ -335,6 +356,14 @@ class Settings {
     document.getElementById('setting-default-layout').value = this._values.defaultLayout;
     document.getElementById('setting-start-video-mode').checked = this._values.startInVideoMode;
     document.getElementById('setting-disable-gpu').checked = this._values.disableHardwareAcceleration;
+
+    // Fetch and display version
+    this._loadVersion();
+
+    // Show update banner if available
+    if (window._updateInfo) {
+      this._showUpdateBanner();
+    }
 
     // Show overlay
     this._overlay.classList.add('visible');
@@ -563,6 +592,27 @@ class Settings {
       row.appendChild(select);
       container.appendChild(row);
     }
+  }
+
+  async _loadVersion() {
+    const el = document.getElementById('settings-version');
+    if (!el) return;
+    try {
+      const version = await ipcRenderer.invoke('app:get-version');
+      el.textContent = version ? `TermWatch v${version}` : '';
+    } catch {
+      el.textContent = '';
+    }
+  }
+
+  _showUpdateBanner() {
+    const banner = document.getElementById('settings-update-banner');
+    if (!banner || !window._updateInfo) return;
+    const label = banner.querySelector('.update-label');
+    if (label) {
+      label.textContent = `Update available: v${window._updateInfo.version}`;
+    }
+    banner.classList.add('visible');
   }
 
   async switchLayout(layoutName) {

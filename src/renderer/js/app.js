@@ -1,4 +1,5 @@
 // Renderer entry point - initializes all modules
+const { ipcRenderer } = require('electron');
 const log = require('electron-log/renderer');
 const path = require('path');
 const jsDir = path.join(__dirname, 'js');
@@ -46,6 +47,13 @@ async function init() {
     if (settings.getValue('startInVideoMode')) {
       hotkeys._toggleVideoMode();
     }
+
+    // Listen for auto-update notifications
+    ipcRenderer.on('app:update-available', (event, info) => {
+      window._updateInfo = info;
+      const settingsBtn = document.getElementById('btn-settings');
+      if (settingsBtn) settingsBtn.classList.add('has-update');
+    });
 
     log.info('Init complete. Terminals:', terminalManager.terminals.size);
   } catch (err) {

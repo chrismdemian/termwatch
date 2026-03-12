@@ -22,6 +22,18 @@ npm install
 npm start
 ```
 
+## Development
+
+```bash
+npm start          # Run the app
+npm test           # Run unit/integration tests
+npm run test:e2e   # Run Playwright E2E tests
+npm run lint       # Lint source code
+npm run licenses   # Generate THIRD-PARTY-LICENSES.txt
+npm run icons      # Regenerate app icons from SVG
+npm run version:bump -- patch  # Bump version (patch/minor/major)
+```
+
 ## Building
 
 ```bash
@@ -31,6 +43,14 @@ npm run build:win
 # macOS
 npm run build:mac
 ```
+
+## Auto-Updates
+
+Built releases check for updates automatically. When an update is available, an indicator appears on the settings gear icon. Updates are never downloaded without user consent — click Download in the settings modal to proceed.
+
+## Third-Party Licenses
+
+Production dependency licenses are listed in [THIRD-PARTY-LICENSES.txt](THIRD-PARTY-LICENSES.txt). Regenerate with `npm run licenses`.
 
 ## Disclaimer
 

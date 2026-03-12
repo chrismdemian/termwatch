@@ -20,6 +20,15 @@ let sessionMock = {
 };
 
 const electronMock = {
+  app: {
+    getVersion: () => '1.0.0',
+    isPackaged: false,
+    isReady: () => false,
+    whenReady: () => Promise.resolve(),
+    on: () => {},
+    getName: () => 'termwatch-test',
+    getPath: () => '/tmp',
+  },
   ipcMain: {
     handle: (ch, h) => { handlers.set(ch, h); },
     on: (ch, h) => {
@@ -76,17 +85,36 @@ class MockStore {
 // --- electron-log mock ---
 const logMock = {
   info: () => {}, warn: () => {}, error: () => {}, debug: () => {},
+  initialize: () => {},
+  transports: { file: {}, console: {} },
 };
 
 // --- Expose mocks for tests ---
 globalThis.__electronMock = electronMock;
 globalThis.__MockStore = MockStore;
 
+// --- electron-updater mock ---
+const updaterMock = {
+  autoUpdater: {
+    autoDownload: true,
+    autoInstallOnAppQuit: true,
+    logger: null,
+    _handlers: {},
+    on: function(event, handler) { this._handlers[event] = handler; },
+    checkForUpdates: async () => {},
+    downloadUpdate: async () => {},
+    quitAndInstall: () => {},
+  },
+};
+
+globalThis.__updaterMock = updaterMock;
+
 // --- Patch Module._load ---
 const originalLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === 'electron') return globalThis.__electronMock;
   if (request === 'electron-store') return MockStore;
-  if (request === 'electron-log') return logMock;
+  if (request === 'electron-log' || request.startsWith('electron-log/')) return logMock;
+  if (request === 'electron-updater') return updaterMock;
   return originalLoad.call(this, request, parent, isMain);
 };
