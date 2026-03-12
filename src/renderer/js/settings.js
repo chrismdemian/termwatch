@@ -1,4 +1,5 @@
 const Pickr = require('@simonwep/pickr');
+const { hexToRgba, normalizeHex } = require('./settings-utils');
 
 class Settings {
   constructor({ layoutManager, terminalManager, controls }) {
@@ -461,16 +462,11 @@ class Settings {
   }
 
   _hexToRgba(hex, alpha) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    return hexToRgba(hex, alpha);
   }
 
   _normalizeHex(value) {
-    const match = value.match(/^#?([0-9a-fA-F]{6})$/);
-    if (match) return '#' + match[1].toLowerCase();
-    return null;
+    return normalizeHex(value);
   }
 
   _getShellsForLayout(layoutName) {

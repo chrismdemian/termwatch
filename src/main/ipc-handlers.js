@@ -193,29 +193,31 @@ function setViews(video, app, win) {
 }
 
 /**
- * Select the active frame — the one whose video commands should target.
- * Heuristic: longest duration wins (content videos >> ads).
- * With 1 frame, just use it.
+ * Pure variant of selectActiveFrame that accepts a Map and returns the selected ID.
+ * Extracted for testability — no side effects.
  */
-function selectActiveFrame() {
-  if (videoFrames.size === 0) {
-    activeFrameId = null;
-    return;
-  }
-  if (videoFrames.size === 1) {
-    activeFrameId = videoFrames.keys().next().value;
-    return;
-  }
+function _selectActiveFrameFromMap(framesMap) {
+  if (!framesMap || framesMap.size === 0) return null;
+  if (framesMap.size === 1) return framesMap.keys().next().value;
 
   let bestId = null;
   let bestDuration = -1;
-  for (const [id, info] of videoFrames) {
+  for (const [id, info] of framesMap) {
     if (info.duration > bestDuration) {
       bestDuration = info.duration;
       bestId = id;
     }
   }
-  activeFrameId = bestId;
+  return bestId;
+}
+
+/**
+ * Select the active frame — the one whose video commands should target.
+ * Heuristic: longest duration wins (content videos >> ads).
+ * With 1 frame, just use it.
+ */
+function selectActiveFrame() {
+  activeFrameId = _selectActiveFrameFromMap(videoFrames);
 }
 
 /**
@@ -676,4 +678,4 @@ function cleanup() {
   activeFrameId = null;
 }
 
-module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup, enterFullscreen, leaveFullscreen, toggleFullscreen, isFullscreen, setStartupPause };
+module.exports = { register, setViews, setupVideoModeKeyboard, clearVideoFrames, cleanup, enterFullscreen, leaveFullscreen, toggleFullscreen, isFullscreen, setStartupPause, isFromAppView, _selectActiveFrameFromMap };
