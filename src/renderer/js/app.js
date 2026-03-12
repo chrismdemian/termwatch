@@ -1,4 +1,5 @@
 // Renderer entry point - initializes all modules
+const log = require('electron-log/renderer');
 const path = require('path');
 const jsDir = path.join(__dirname, 'js');
 const TerminalManager = require(path.join(jsDir, 'terminal-manager'));
@@ -9,12 +10,21 @@ const Hotkeys = require(path.join(jsDir, 'hotkeys'));
 const Titlebar = require(path.join(jsDir, 'titlebar'));
 const Settings = require(path.join(jsDir, 'settings'));
 
+// Global error handlers for renderer
+window.addEventListener('error', (event) => {
+  log.error('Renderer uncaught error:', event.error || event.message);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  log.error('Renderer unhandled rejection:', event.reason);
+});
+
 async function init() {
   try {
     // Initialize modules
     const terminalManager = new TerminalManager();
     const terminalArea = document.getElementById('terminal-area');
-    console.log('[TermWatch] terminal-area element:', terminalArea ? 'found' : 'MISSING');
+    log.info('terminal-area element:', terminalArea ? 'found' : 'MISSING');
 
     const layoutManager = new LayoutManager(terminalManager, terminalArea);
     const controls = new Controls();
@@ -37,10 +47,9 @@ async function init() {
       hotkeys._toggleVideoMode();
     }
 
-    console.log('[TermWatch] Init complete. Terminals:', terminalManager.terminals.size);
-    console.log('[TermWatch] Terminal area children:', terminalArea.children.length);
+    log.info('Init complete. Terminals:', terminalManager.terminals.size);
   } catch (err) {
-    console.error('[TermWatch] Init failed:', err);
+    log.error('Init failed:', err);
   }
 }
 

@@ -21,6 +21,7 @@ class Settings {
       autoHideDelay: 3000,
       defaultLayout: '1x1',
       startInVideoMode: false,
+      disableHardwareAcceleration: false,
       shellConfig: {},
     };
 
@@ -282,6 +283,15 @@ class Settings {
       window.storeAPI.set('startInVideoMode', startVideoModeToggle.checked);
     });
 
+    // Disable hardware acceleration
+    const disableGpuToggle = document.getElementById('setting-disable-gpu');
+    disableGpuToggle.addEventListener('change', () => {
+      this._values.disableHardwareAcceleration = disableGpuToggle.checked;
+      window.storeAPI.set('disableHardwareAcceleration', disableGpuToggle.checked);
+      // Show restart notice
+      alert('Hardware acceleration setting changed. Please restart the app for this to take effect.');
+    });
+
     // Clear all data
     document.getElementById('setting-clear-all-data').addEventListener('click', async () => {
       const confirmed = confirm(
@@ -323,6 +333,7 @@ class Settings {
     document.getElementById('setting-auto-hide-delay').value = this._values.autoHideDelay;
     document.getElementById('setting-default-layout').value = this._values.defaultLayout;
     document.getElementById('setting-start-video-mode').checked = this._values.startInVideoMode;
+    document.getElementById('setting-disable-gpu').checked = this._values.disableHardwareAcceleration;
 
     // Show overlay
     this._overlay.classList.add('visible');

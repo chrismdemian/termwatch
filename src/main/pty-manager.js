@@ -2,6 +2,8 @@ const os = require('os');
 const fs = require('fs');
 const { execFileSync } = require('child_process');
 const path = require('path');
+const log = require('./logger');
+const treeKill = require('tree-kill');
 
 let pty;
 try {
@@ -10,7 +12,7 @@ try {
   try {
     pty = require('node-pty');
   } catch (e2) {
-    console.error('Failed to load node-pty:', e2.message);
+    log.error('Failed to load node-pty:', e2.message);
     pty = null;
   }
 }
@@ -125,7 +127,7 @@ function getAvailableShells() {
 
 function createPty(cols = 80, rows = 24, shell, args) {
   if (!pty) {
-    console.error('node-pty not available');
+    log.error('node-pty not available');
     return null;
   }
 
@@ -143,6 +145,12 @@ function createPty(cols = 80, rows = 24, shell, args) {
   });
 
   ptys.set(id, ptyProcess);
+  log.info(`PTY created: id=${id}, pid=${ptyProcess.pid}, shell=${shellCmd}`);
+
+  ptyProcess.onExit(({ exitCode, signal }) => {
+    log.info(`PTY exited: id=${id}, pid=${ptyProcess.pid}, exitCode=${exitCode}, signal=${signal}`);
+  });
+
   return { id, pid: ptyProcess.pid };
 }
 
@@ -164,29 +172,61 @@ function resizePty(id, cols, rows) {
 
 function destroyPty(id) {
   const p = ptys.get(id);
-  if (p) {
-    try {
-      p.kill();
-    } catch (e) {
-      // Already dead
+  if (!p) return Promise.resolve();
+
+  const pid = p.pid;
+  ptys.delete(id);
+  log.info(`PTY destroying: id=${id}, pid=${pid}`);
+
+  return new Promise((resolve) => {
+    if (process.platform === 'win32') {
+      treeKill(pid, 'SIGTERM', (err) => {
+        if (err) {
+          log.warn(`PTY tree-kill SIGTERM failed for pid=${pid}, retrying with SIGKILL:`, err.message);
+          setTimeout(() => {
+            treeKill(pid, 'SIGKILL', (err2) => {
+              if (err2) {
+                log.warn(`PTY tree-kill SIGKILL failed for pid=${pid}:`, err2.message);
+              }
+              resolve();
+            });
+          }, 2000);
+        } else {
+          resolve();
+        }
+      });
+    } else {
+      try {
+        p.kill();
+      } catch (e) {
+        // Already dead
+      }
+      resolve();
     }
-    ptys.delete(id);
-  }
+  });
 }
 
 function getPty(id) {
   return ptys.get(id);
 }
 
-function destroyAll() {
+async function destroyAll() {
+  const promises = [];
+  for (const [id] of ptys) {
+    promises.push(destroyPty(id));
+  }
+  await Promise.allSettled(promises);
+}
+
+function forceKillAll() {
   for (const [id, p] of ptys) {
     try {
       p.kill();
     } catch (e) {
-      // Ignore
+      // Ignore — last resort cleanup
     }
   }
   ptys.clear();
 }
 
-module.exports = { createPty, writePty, resizePty, destroyPty, getPty, destroyAll, getAvailableShells };
+module.exports = { createPty, writePty, resizePty, destroyPty, getPty, destroyAll, getAvailableShells, forceKillAll };

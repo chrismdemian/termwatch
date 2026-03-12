@@ -1,6 +1,7 @@
 const { ipcMain, screen, session } = require('electron');
 const ptyManager = require('./pty-manager');
 const store = require('./store');
+const log = require('./logger');
 
 /**
  * Check if the IPC sender is the app view (local file://).
@@ -270,7 +271,7 @@ function exitVideoMode() {
     try {
       appView.webContents.send('video:mode-exited');
     } catch (e) {
-      // View disposed during shutdown
+      log.warn('View disposed during exitVideoMode:', e.message);
     }
   }
 }
@@ -356,6 +357,7 @@ function register() {
         args = match.args;
       }
     }
+    log.info(`PTY create requested via IPC: cols=${cols}, rows=${rows}, shellId=${shellId || 'auto'}`);
     const result = ptyManager.createPty(cols, rows, shell, args);
     if (!result) return null;
     const p = ptyManager.getPty(result.id);
@@ -366,7 +368,7 @@ function register() {
             appView.webContents.send('pty:data', result.id, data);
           }
         } catch (e) {
-          // View disposed during shutdown
+          log.warn('View disposed during pty:data:', e.message);
         }
       });
       p.onExit(({ exitCode, signal }) => {
@@ -375,7 +377,7 @@ function register() {
             appView.webContents.send('pty:exit', result.id, exitCode, signal);
           }
         } catch (e) {
-          // View disposed during shutdown
+          log.warn('View disposed during pty:exit:', e.message);
         }
       });
     }
@@ -406,6 +408,7 @@ function register() {
   ipcMain.on('video:frame-register', (e, { frameId }) => {
     if (!e.senderFrame || e.senderFrame.isDestroyed()) return;
     if (typeof frameId !== 'string' || frameId.length > 50) return;
+    log.info(`Video frame registered: ${frameId}`);
     const now = Date.now();
     videoFrames.set(frameId, {
       webFrame: e.senderFrame,
@@ -434,6 +437,7 @@ function register() {
 
   ipcMain.on('video:frame-deregister', (e, { frameId }) => {
     if (typeof frameId !== 'string') return;
+    log.info(`Video frame deregistered: ${frameId}`);
     const wasActive = frameId === activeFrameId;
     videoFrames.delete(frameId);
     if (wasActive) {
@@ -446,6 +450,7 @@ function register() {
     if (!isFromAppView(e)) return;
     if (typeof url !== 'string' || url.length > 2048) return;
     if (!/^https?:\/\//i.test(url)) return;
+    log.info('Video navigate:', url);
     clearStartupPauseMain();
     if (videoView && !videoView.webContents.isDestroyed()) {
       videoView.webContents.loadURL(url);
@@ -507,7 +512,7 @@ function register() {
       try {
         appView.webContents.send('video:state', cleanState);
       } catch (e) {
-        // View disposed during shutdown
+        log.warn('View disposed during video:state forward:', e.message);
       }
     }
   });
@@ -517,6 +522,7 @@ function register() {
     if (!isFromAppView(e)) return;
     if (typeof enabled !== 'boolean') return;
     if (!appView || !videoView) return;
+    log.info(`Video mode toggled: ${enabled}`);
     videoModeActive = enabled;
     if (enabled) {
       appView.setVisible(false);
@@ -610,6 +616,7 @@ function register() {
   ipcMain.on('store:set', (e, key, value) => {
     if (!isFromAppView(e)) return;
     if (typeof key !== 'string') return;
+    log.info(`Store set: ${key}`);
     store.set(key, value);
   });
 
@@ -624,6 +631,7 @@ function register() {
   // --- Clear all data ---
   ipcMain.handle('app:clear-all-data', async (e) => {
     if (!isFromAppView(e)) return false;
+    log.info('Clearing all application data');
     store.clear();
     const videoSession = session.fromPartition('persist:video');
     await videoSession.clearStorageData();

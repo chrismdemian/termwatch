@@ -1,3 +1,6 @@
+// Logger MUST be imported first — initializes IPC forwarding for renderers
+const log = require('./logger');
+
 const { app, BaseWindow, WebContentsView, session, components, nativeTheme } = require('electron');
 const path = require('path');
 const store = require('./store');
@@ -7,15 +10,30 @@ const ptyManager = require('./pty-manager');
 // Force dark theme for native Chromium UI (color picker, input spinners, etc.)
 nativeTheme.themeSource = 'dark';
 
+// GPU setting check — must run before app.whenReady()
+if (store.get('disableHardwareAcceleration')) {
+  log.info('Hardware acceleration disabled by user setting');
+  app.disableHardwareAcceleration();
+}
+
+// Global exception handlers
+process.on('uncaughtException', (error) => {
+  log.error('Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  log.error('Unhandled rejection:', reason);
+});
+
 // Handle DRM initialization (Castlabs Electron fork)
 async function initDRM() {
   try {
     if (components && components.whenReady) {
       await components.whenReady();
-      console.log('DRM components ready:', components.status());
+      log.info('DRM components ready:', components.status());
     }
   } catch (e) {
-    console.log('DRM not available (standard Electron):', e.message);
+    log.info('DRM not available (standard Electron):', e.message);
   }
 }
 
@@ -66,6 +84,29 @@ function createWindow() {
   appView.setBackgroundColor('#00000000');
   baseWindow.contentView.addChildView(appView);
 
+  log.info('Window created');
+
+  // Crash recovery for app view
+  appView.webContents.on('render-process-gone', (event, details) => {
+    log.error('App view render process gone:', details.reason, 'exitCode:', details.exitCode);
+    if (details.reason !== 'clean-exit') {
+      log.info('Reloading app view after crash');
+      appView.webContents.reload();
+    }
+  });
+
+  // Crash recovery for video view
+  videoView.webContents.on('render-process-gone', (event, details) => {
+    log.error('Video view render process gone:', details.reason, 'exitCode:', details.exitCode);
+    if (details.reason !== 'clean-exit') {
+      const lastUrl = store.get('lastVideoUrl');
+      if (lastUrl) {
+        log.info('Reloading video view with last URL:', lastUrl);
+        videoView.webContents.loadURL(lastUrl);
+      }
+    }
+  });
+
   // Prevent app view from navigating to external URLs (defense-in-depth:
   // nodeIntegration=true means any page it navigates to gets full Node.js access)
   appView.webContents.on('will-navigate', (event, url) => {
@@ -89,14 +130,17 @@ function createWindow() {
     videoView.webContents.setAudioMuted(true);
     videoView.webContents.loadURL(lastUrl);
     ipcHandlers.setStartupPause(true);
+    log.info('Video view loaded with saved URL:', lastUrl);
   } else {
     videoView.webContents.loadFile(
       path.join(__dirname, '..', 'renderer', 'video.html')
     );
+    log.info('Video view loaded with default page');
   }
   appView.webContents.loadFile(
     path.join(__dirname, '..', 'renderer', 'app.html')
   );
+  log.info('App view loaded');
 
   // Handle video view navigation events
   videoView.webContents.on('did-navigate', (e, url) => {
@@ -261,14 +305,54 @@ app.whenReady().then(async () => {
     return ALLOWED_PERMISSIONS.has(permission);
   });
 
+  // GPU/child process crash handler
+  app.on('child-process-gone', (event, details) => {
+    log.error(`Child process gone: type=${details.type}, reason=${details.reason}, exitCode=${details.exitCode}`);
+  });
+
   createWindow();
+});
+
+// Shutdown sequence
+let isShuttingDown = false;
+
+app.on('before-quit', async (event) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  event.preventDefault();
+
+  log.info('Shutdown sequence started');
+
+  // Save window bounds
+  if (baseWindow && !baseWindow.isDestroyed() && !ipcHandlers.isFullscreen()) {
+    const bounds = baseWindow.getBounds();
+    store.set('windowBounds', bounds);
+  }
+
+  // Clean up IPC handlers and intervals
+  ipcHandlers.cleanup();
+
+  // Destroy all PTY processes with timeout
+  try {
+    await Promise.race([
+      ptyManager.destroyAll(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('PTY cleanup timeout')), 5000)),
+    ]);
+    log.info('PTY cleanup completed');
+  } catch (e) {
+    log.warn('PTY cleanup timed out, force killing');
+    ptyManager.forceKillAll();
+  }
+
+  log.info('Shutdown sequence complete');
+  app.quit();
 });
 
 app.on('window-all-closed', () => {
   app.quit();
 });
 
-app.on('before-quit', () => {
-  ipcHandlers.cleanup();
-  ptyManager.destroyAll();
+// Last-resort synchronous cleanup on process exit
+process.on('exit', () => {
+  ptyManager.forceKillAll();
 });

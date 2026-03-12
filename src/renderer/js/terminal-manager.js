@@ -1,3 +1,4 @@
+const log = require('electron-log/renderer');
 const { Terminal } = require('@xterm/xterm');
 const { CanvasAddon } = require('@xterm/addon-canvas');
 const { FitAddon } = require('@xterm/addon-fit');
@@ -75,26 +76,26 @@ class TerminalManager {
     terminal.loadAddon(new WebLinksAddon());
 
     terminal.open(container);
-    console.log('[TermWatch] Terminal opened in container. Container size:', container.offsetWidth, 'x', container.offsetHeight);
+    log.info('Terminal opened. Container size:', container.offsetWidth, 'x', container.offsetHeight);
 
     // Load canvas addon after opening
     try {
       terminal.loadAddon(new CanvasAddon());
-      console.log('[TermWatch] Canvas addon loaded');
+      log.info('Canvas addon loaded');
     } catch (e) {
-      console.warn('[TermWatch] Canvas addon failed, using default renderer:', e.message);
+      log.warn('Canvas addon failed, using default renderer:', e.message);
     }
 
     fitAddon.fit();
-    console.log('[TermWatch] Terminal fitted. Cols:', terminal.cols, 'Rows:', terminal.rows);
+    log.info('Terminal fitted. Cols:', terminal.cols, 'Rows:', terminal.rows);
 
     // Create PTY
     const result = await window.terminalAPI.createPty(terminal.cols, terminal.rows, shellId);
     if (!result) {
-      console.error('[TermWatch] Failed to create PTY');
+      log.error('Failed to create PTY');
       return null;
     }
-    console.log('[TermWatch] PTY created. ID:', result.id);
+    log.info('PTY created. ID:', result.id);
 
     const entry = {
       terminal,
