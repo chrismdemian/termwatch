@@ -1,3 +1,5 @@
+const { formatTime } = require('./controls-utils');
+
 class Controls {
   constructor() {
     this.videoState = { currentTime: 0, duration: 0, paused: true, volume: 1, muted: false };
@@ -195,10 +197,7 @@ class Controls {
   }
 
   _formatTime(seconds) {
-    if (!isFinite(seconds) || seconds < 0) return '0:00';
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    return formatTime(seconds);
   }
 
   _startAutoHide() {

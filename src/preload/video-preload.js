@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const { findBestVideo } = require('./video-scoring');
 
 // --- Frame identity ---
 const isMainFrame = process.isMainFrame;
@@ -35,29 +36,11 @@ document.addEventListener('pointerdown', () => { lastUserInteraction = Date.now(
 
 /**
  * Find the best <video> element on the page.
- * Single-video pages short-circuit. Multi-video pages score by:
- * playing (+100), duration (clamped to +7200), visible area, has source.
+ * Delegates scoring to video-scoring.js.
  */
 function findVideo() {
   const videos = document.querySelectorAll('video');
-  if (videos.length === 0) return null;
-  if (videos.length === 1) return videos[0];
-
-  let best = null;
-  let bestScore = -1;
-  for (const v of videos) {
-    let score = 0;
-    if (!v.paused) score += 100;
-    if (isFinite(v.duration) && v.duration > 0) score += Math.min(v.duration, 7200);
-    const rect = v.getBoundingClientRect();
-    score += (rect.width * rect.height) / 1000;
-    if (v.src || v.querySelector('source')) score += 10;
-    if (score > bestScore) {
-      bestScore = score;
-      best = v;
-    }
-  }
-  return best;
+  return findBestVideo(videos);
 }
 
 /**

@@ -9,7 +9,9 @@
     "build": "electron-builder",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
-    "audit": "npm audit --audit-level=high"
+    "audit": "npm audit --audit-level=high",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "author": "TermWatch",
   "license": "MIT",
@@ -28,6 +30,8 @@
   "devDependencies": {
     "@electron/rebuild": "3.7.2",
     "electron": "https://github.com/castlabs/electron-releases#v40.7.0+wvcus",
-    "electron-builder": "25.1.8"
+    "electron-builder": "25.1.8",
+    "happy-dom": "^20.8.3",
+    "vitest": "^4.0.18"
   }
 }
