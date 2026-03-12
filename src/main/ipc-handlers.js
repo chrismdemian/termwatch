@@ -638,6 +638,11 @@ function register() {
   });
 
   // --- Auto-update ---
+  ipcMain.handle('app:check-for-updates', (e) => {
+    if (!isFromAppView(e)) return;
+    updater.checkForUpdates();
+  });
+
   ipcMain.on('app:download-update', (e) => {
     if (!isFromAppView(e)) return;
     updater.downloadUpdate();
@@ -646,6 +651,13 @@ function register() {
   ipcMain.on('app:install-update', (e) => {
     if (!isFromAppView(e)) return;
     updater.installUpdate();
+  });
+
+  ipcMain.on('app:set-update-channel', (e, channel) => {
+    if (!isFromAppView(e)) return;
+    if (channel !== 'latest' && channel !== 'beta') return;
+    store.set('updateChannel', channel);
+    updater.setChannel(channel);
   });
 
   // --- Clear all data ---

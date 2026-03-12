@@ -478,11 +478,14 @@
   display: none;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 10px 14px;
   margin-bottom: 20px;
   background: rgba(212, 145, 94, 0.1);
   border: 1px solid rgba(212, 145, 94, 0.3);
   border-radius: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
 .settings-update-banner.visible {
@@ -514,3 +517,36 @@
   opacity: 0.5;
   cursor: default;
 }
+
+.settings-update-banner .update-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.settings-update-banner .update-notes {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-update-banner .update-error {
+  font-size: 11px;
+  color: #e85c5c;
+}
+
+.update-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 0 0 8px 8px;
+  width: calc(var(--progress, 0) * 1%);
+  transition: width 0.3s ease-out;
+}
+

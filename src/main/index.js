@@ -145,6 +145,10 @@ function createWindow() {
 
   // Initialize auto-updater
   updater.initAutoUpdater(appView);
+  const savedChannel = store.get('updateChannel');
+  if (savedChannel === 'beta') {
+    updater.setChannel(savedChannel);
+  }
 
   // Handle video view navigation events
   videoView.webContents.on('did-navigate', (e, url) => {

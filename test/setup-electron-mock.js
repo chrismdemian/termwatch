@@ -98,6 +98,7 @@ const updaterMock = {
   autoUpdater: {
     autoDownload: true,
     autoInstallOnAppQuit: true,
+    channel: 'latest',
     logger: null,
     _handlers: {},
     on: function(event, handler) { this._handlers[event] = handler; },

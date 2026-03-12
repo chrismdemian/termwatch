@@ -142,8 +142,12 @@
 
       <!-- Update Banner (hidden by default) -->
       <div class="settings-update-banner" id="settings-update-banner">
-        <span class="update-label">Update available</span>
+        <div class="update-info">
+          <span class="update-label">Update available</span>
+          <span class="update-notes" id="update-notes"></span>
+        </div>
         <button class="update-btn" id="update-download-btn">Download</button>
+        <div class="update-progress-bar" id="update-progress-bar"></div>
       </div>
 
       <!-- Terminal Section -->
@@ -292,6 +296,22 @@
           </button>
         </div>
         <p class="settings-hint">Removes all settings, bookmarks, and browsing data. The app will restart.</p>
+      </div>
+
+      <!-- Updates Section -->
+      <div class="settings-section">
+        <div class="settings-section-title">Updates</div>
+        <div class="settings-row">
+          <span class="settings-label">Channel</span>
+          <select class="settings-select" id="setting-update-channel" aria-label="Update channel">
+            <option value="latest">Latest (Stable)</option>
+            <option value="beta">Beta</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Check for updates</span>
+          <button class="settings-action-btn" id="btn-check-updates">Check Now</button>
+        </div>
       </div>
 
       <div class="settings-version" id="settings-version"></div>

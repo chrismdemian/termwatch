@@ -35,10 +35,37 @@ function initAutoUpdater(appView) {
         appViewRef.webContents.send('app:update-available', {
           version: info.version,
           releaseDate: info.releaseDate,
+          releaseNotes: info.releaseNotes || null,
         });
       }
     } catch (e) {
       log.warn('Failed to notify renderer of update:', e.message);
+    }
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    log.info('No update available');
+    try {
+      if (appViewRef && !appViewRef.webContents.isDestroyed()) {
+        appViewRef.webContents.send('app:update-not-available');
+      }
+    } catch (e) {
+      log.warn('Failed to notify renderer:', e.message);
+    }
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    try {
+      if (appViewRef && !appViewRef.webContents.isDestroyed()) {
+        appViewRef.webContents.send('app:download-progress', {
+          percent: progress.percent,
+          bytesPerSecond: progress.bytesPerSecond,
+          transferred: progress.transferred,
+          total: progress.total,
+        });
+      }
+    } catch (e) {
+      log.warn('Failed to forward download progress:', e.message);
     }
   });
 
@@ -55,6 +82,13 @@ function initAutoUpdater(appView) {
 
   autoUpdater.on('error', (err) => {
     log.warn('Auto-updater error:', err.message);
+    try {
+      if (appViewRef && !appViewRef.webContents.isDestroyed()) {
+        appViewRef.webContents.send('app:update-error', { message: err.message });
+      }
+    } catch (e) {
+      log.warn('Failed to notify renderer of update error:', e.message);
+    }
   });
 
   // Check 10 seconds after startup
@@ -91,6 +125,12 @@ function installUpdate() {
   autoUpdater.quitAndInstall(false, true);
 }
 
+function setChannel(channel) {
+  if (!autoUpdater) return;
+  autoUpdater.channel = channel;
+  log.info('Update channel set to:', channel);
+}
+
 function cleanup() {
   if (checkInterval) {
     clearInterval(checkInterval);
@@ -100,4 +140,4 @@ function cleanup() {
   appViewRef = null;
 }
 
-module.exports = { initAutoUpdater, downloadUpdate, installUpdate, cleanup };
+module.exports = { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate, setChannel, cleanup };

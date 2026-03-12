@@ -304,13 +304,86 @@ class Settings {
           ipcRenderer.send('app:download-update');
           updateBtn.textContent = 'Downloading...';
           updateBtn.disabled = true;
-          // Listen for download completion to switch to Install
-          ipcRenderer.once('app:update-downloaded', () => {
-            updateBtn.textContent = 'Install & Restart';
-            updateBtn.disabled = false;
-            updateBtn.dataset.state = 'install';
-          });
         }
+      });
+
+      ipcRenderer.on('app:download-progress', (_event, progress) => {
+        const pct = Math.round(progress.percent);
+        updateBtn.textContent = `Downloading ${pct}%...`;
+        const bar = document.getElementById('update-progress-bar');
+        if (bar) bar.style.setProperty('--progress', pct);
+      });
+
+      ipcRenderer.on('app:update-downloaded', () => {
+        updateBtn.textContent = 'Install & Restart';
+        updateBtn.disabled = false;
+        updateBtn.dataset.state = 'install';
+        const bar = document.getElementById('update-progress-bar');
+        if (bar) bar.style.setProperty('--progress', 100);
+      });
+
+      ipcRenderer.on('app:update-error', (_event, { message }) => {
+        updateBtn.textContent = 'Download';
+        updateBtn.disabled = false;
+        updateBtn.dataset.state = '';
+        const banner = document.getElementById('settings-update-banner');
+        if (banner) {
+          const existing = banner.querySelector('.update-error');
+          if (existing) existing.remove();
+          const errEl = document.createElement('span');
+          errEl.className = 'update-error';
+          errEl.textContent = message;
+          banner.querySelector('.update-info').appendChild(errEl);
+          setTimeout(() => errEl.remove(), 8000);
+        }
+      });
+    }
+
+    // Check for updates button
+    const checkBtn = document.getElementById('btn-check-updates');
+    if (checkBtn) {
+      checkBtn.addEventListener('click', async () => {
+        checkBtn.textContent = 'Checking...';
+        checkBtn.disabled = true;
+        clearTimeout(this._checkUpdateTimeout);
+        await ipcRenderer.invoke('app:check-for-updates');
+        // If no update event arrives within 10s, reset
+        this._checkUpdateTimeout = setTimeout(() => {
+          checkBtn.textContent = 'Check Now';
+          checkBtn.disabled = false;
+        }, 10000);
+      });
+
+      ipcRenderer.on('app:update-not-available', () => {
+        clearTimeout(this._checkUpdateTimeout);
+        checkBtn.textContent = 'Up to date!';
+        checkBtn.disabled = true;
+        setTimeout(() => {
+          checkBtn.textContent = 'Check Now';
+          checkBtn.disabled = false;
+        }, 3000);
+      });
+
+      ipcRenderer.on('app:update-available', () => {
+        clearTimeout(this._checkUpdateTimeout);
+        checkBtn.textContent = 'Check Now';
+        checkBtn.disabled = false;
+        // Update banner will be shown by _showUpdateBanner via app.js
+        if (this.isOpen) this._showUpdateBanner();
+      });
+
+      ipcRenderer.on('app:update-error', () => {
+        clearTimeout(this._checkUpdateTimeout);
+        checkBtn.textContent = 'Check Now';
+        checkBtn.disabled = false;
+      });
+    }
+
+    // Update channel selector
+    const channelSelect = document.getElementById('setting-update-channel');
+    if (channelSelect) {
+      channelSelect.addEventListener('change', () => {
+        ipcRenderer.send('app:set-update-channel', channelSelect.value);
       });
     }
 
@@ -356,6 +429,13 @@ class Settings {
     document.getElementById('setting-default-layout').value = this._values.defaultLayout;
     document.getElementById('setting-start-video-mode').checked = this._values.startInVideoMode;
     document.getElementById('setting-disable-gpu').checked = this._values.disableHardwareAcceleration;
+
+    // Load update channel
+    const savedChannel = await window.storeAPI.get('updateChannel');
+    const channelSelect = document.getElementById('setting-update-channel');
+    if (channelSelect) {
+      channelSelect.value = savedChannel || 'latest';
+    }
 
     // Fetch and display version
     this._loadVersion();
@@ -611,6 +691,20 @@ class Settings {
     const label = banner.querySelector('.update-label');
     if (label) {
       label.textContent = `Update available: v${window._updateInfo.version}`;
+    }
+    // Display release notes summary
+    const notesEl = document.getElementById('update-notes');
+    if (notesEl && window._updateInfo.releaseNotes) {
+      let notes = window._updateInfo.releaseNotes;
+      // releaseNotes can be a string or array of { version, note }
+      if (Array.isArray(notes)) {
+        notes = notes.map(n => n.note || n).join('; ');
+      }
+      // Strip HTML tags and truncate
+      notes = notes.replace(/<[^>]+>/g, '').trim();
+      if (notes.length > 120) notes = notes.slice(0, 117) + '...';
+      notesEl.textContent = notes;
+      notesEl.title = notes;
     }
     banner.classList.add('visible');
   }

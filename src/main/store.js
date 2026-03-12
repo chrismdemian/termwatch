@@ -26,6 +26,7 @@ const store = new Store({
     disableHardwareAcceleration: false,
     isFullscreen: true,
     shellConfig: {},
+    updateChannel: 'latest',
   },
 });
 
