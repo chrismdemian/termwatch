@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="css/bookmarks.css">
   <link rel="stylesheet" href="../../node_modules/@simonwep/pickr/dist/themes/nano.min.css">
   <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/help.css">
+  <link rel="stylesheet" href="css/first-run.css">
 </head>
 <body>
   <!-- Title Bar -->
@@ -131,6 +133,30 @@
     <button class="bookmark-add-btn" id="btn-add-bookmark" title="Add bookmark" aria-label="Add bookmark">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
+  </div>
+
+  <!-- First-Run Modal -->
+  <div id="first-run-overlay" class="first-run-overlay" role="dialog" aria-modal="true" aria-label="Welcome to TermWatch">
+    <div class="first-run-modal">
+      <div class="first-run-header">
+        <div class="first-run-title">Welcome to TermWatch</div>
+        <div class="first-run-subtitle">Please review the following before getting started</div>
+      </div>
+      <div id="first-run-body"></div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="help-overlay" class="help-overlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+    <div class="help-modal" id="help-modal">
+      <div class="help-header">
+        <span class="help-title">Keyboard Shortcuts</span>
+        <button class="help-close-btn" id="help-close-btn" aria-label="Close help">
+          <svg width="12" height="12" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+      <div id="help-body"></div>
+    </div>
   </div>
 
   <!-- Settings Modal -->

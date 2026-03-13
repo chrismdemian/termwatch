@@ -10,6 +10,8 @@ const Bookmarks = require(path.join(jsDir, 'bookmarks'));
 const Hotkeys = require(path.join(jsDir, 'hotkeys'));
 const Titlebar = require(path.join(jsDir, 'titlebar'));
 const Settings = require(path.join(jsDir, 'settings'));
+const HelpModal = require(path.join(jsDir, 'help-modal'));
+const FirstRunModal = require(path.join(jsDir, 'first-run'));
 
 // Global error handlers for renderer
 window.addEventListener('error', (event) => {
@@ -22,6 +24,29 @@ window.addEventListener('unhandledrejection', (event) => {
 
 async function init() {
   try {
+    // First-run check — block app init until EULA/privacy acknowledged
+    try {
+      const firstRunCompleted = await window.storeAPI.get('firstRunCompleted');
+      if (!firstRunCompleted) {
+        // Detect existing users upgrading from a version without firstRunCompleted:
+        // if they have a saved video URL or bookmarks, they've used the app before.
+        const lastUrl = await window.storeAPI.get('lastVideoUrl');
+        const existingBookmarks = await window.storeAPI.get('bookmarks');
+        const isExistingUser = (lastUrl && lastUrl.length > 0) ||
+          (Array.isArray(existingBookmarks) && existingBookmarks.length > 0);
+
+        if (isExistingUser) {
+          window.storeAPI.set('firstRunCompleted', true);
+        } else {
+          const firstRun = new FirstRunModal();
+          await firstRun.run();
+        }
+      }
+    } catch (err) {
+      log.warn('First-run check failed, skipping:', err);
+      window.storeAPI.set('firstRunCompleted', true);
+    }
+
     // Initialize modules
     const terminalManager = new TerminalManager();
     const terminalArea = document.getElementById('terminal-area');
@@ -37,7 +62,8 @@ async function init() {
     window._layoutManager = layoutManager;
 
     const settings = new Settings({ layoutManager, terminalManager, controls });
-    const hotkeys = new Hotkeys({ layoutManager, terminalManager, controls, bookmarks, settings });
+    const helpModal = new HelpModal();
+    const hotkeys = new Hotkeys({ layoutManager, terminalManager, controls, bookmarks, settings, helpModal });
 
     // Load saved settings and initialize layout
     await settings.load();

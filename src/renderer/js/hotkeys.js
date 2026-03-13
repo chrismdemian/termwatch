@@ -1,10 +1,11 @@
 class Hotkeys {
-  constructor({ layoutManager, terminalManager, controls, bookmarks, settings }) {
+  constructor({ layoutManager, terminalManager, controls, bookmarks, settings, helpModal }) {
     this.layoutManager = layoutManager;
     this.terminalManager = terminalManager;
     this.controls = controls;
     this.bookmarks = bookmarks;
     this.settings = settings;
+    this.helpModal = helpModal;
     this.videoMode = false;
     this.theaterMode = false;
 
@@ -29,8 +30,12 @@ class Hotkeys {
         return;
       }
 
-      // Escape closes settings first, then theater/video mode
+      // Escape closes help first, then settings, then theater/video mode
       if (e.key === 'Escape') {
+        if (this.helpModal && this.helpModal.isOpen) {
+          this.helpModal.close();
+          return;
+        }
         if (this.settings.isOpen) {
           this.settings.close();
           return;
@@ -43,8 +48,15 @@ class Hotkeys {
         return;
       }
 
-      // Block other hotkeys when settings modal is open
+      // ? key toggles help modal
+      if (e.key === '?' && !this.settings.isOpen && this.helpModal) {
+        this.helpModal.toggle();
+        return;
+      }
+
+      // Block other hotkeys when settings or help modal is open
       if (this.settings.isOpen) return;
+      if (this.helpModal && this.helpModal.isOpen) return;
 
       if (e.ctrlKey && e.shiftKey) {
         switch (e.code) {
