@@ -26,7 +26,11 @@ process.on('unhandledRejection', (reason) => {
   log.error('Unhandled rejection:', reason);
 });
 
-// Handle DRM initialization (Castlabs Electron fork)
+/**
+ * Initialize Widevine DRM components (CastLabs Electron fork).
+ * Falls back gracefully when running on standard Electron.
+ * @returns {Promise<void>}
+ */
 async function initDRM() {
   try {
     if (components && components.whenReady) {
@@ -42,6 +46,10 @@ let baseWindow = null;
 let videoView = null;
 let appView = null;
 
+/**
+ * Create the main application window with stacked video and app views.
+ * Sets up IPC handlers, loads content, and wires up event listeners.
+ */
 function createWindow() {
   const bounds = store.get('windowBounds');
 
@@ -239,6 +247,11 @@ function createWindow() {
   });
 }
 
+/**
+ * Open a child popup window for OAuth/sign-in flows.
+ * Shares the video session partition so auth cookies persist.
+ * @param {string} url - URL to load in the popup
+ */
 function openAuthPopup(url) {
   // Only allow http/https URLs for security
   if (!/^https?:\/\//i.test(url)) return;
@@ -283,6 +296,9 @@ function openAuthPopup(url) {
   popup.show();
 }
 
+/**
+ * Resize both the video and app views to fill the window's content area.
+ */
 function updateViewBounds() {
   if (!baseWindow) return;
   const { width, height } = baseWindow.getContentBounds();
@@ -291,6 +307,10 @@ function updateViewBounds() {
 }
 
 let boundsTimeout = null;
+/**
+ * Debounce-save the current window bounds to the store.
+ * Skips saving when in fullscreen mode.
+ */
 function saveBoundsDebounced() {
   if (boundsTimeout) clearTimeout(boundsTimeout);
   boundsTimeout = setTimeout(() => {
@@ -303,6 +323,11 @@ function saveBoundsDebounced() {
 
 let pendingVideoUrl = null;
 let videoUrlTimeout = null;
+/**
+ * Debounce-save the last video URL to the store.
+ * Coalesces rapid navigation events into a single write.
+ * @param {string} url - Video URL to persist
+ */
 function saveLastVideoUrlDebounced(url) {
   pendingVideoUrl = url;
   if (videoUrlTimeout) clearTimeout(videoUrlTimeout);
@@ -313,6 +338,10 @@ function saveLastVideoUrlDebounced(url) {
   }, 2000);
 }
 
+/**
+ * Immediately flush any pending debounced video URL to the store.
+ * Called during shutdown to avoid losing the last navigated URL.
+ */
 function flushPendingVideoUrl() {
   if (videoUrlTimeout) {
     clearTimeout(videoUrlTimeout);

@@ -7,6 +7,11 @@ let checkInterval = null;
 let consecutiveFailures = 0;
 let retryTimeout = null;
 
+/**
+ * Initialize the auto-updater and wire up event forwarding to the renderer.
+ * Skipped in development mode. Schedules periodic update checks.
+ * @param {Electron.WebContentsView} appView - The app view to send update events to
+ */
 function initAutoUpdater(appView) {
   // Skip in development mode
   if (!app.isPackaged) {
@@ -104,6 +109,9 @@ function initAutoUpdater(appView) {
   }, 6 * 60 * 60 * 1000);
 }
 
+/**
+ * Check for available updates. Schedules a retry on failure.
+ */
 function checkForUpdates() {
   if (!autoUpdater) return;
   try {
@@ -121,6 +129,10 @@ function checkForUpdates() {
   }
 }
 
+/**
+ * Schedule a retry after a failed update check.
+ * Retries up to 3 times with 30-minute intervals.
+ */
 function scheduleRetry() {
   if (retryTimeout) clearTimeout(retryTimeout);
   consecutiveFailures++;
@@ -133,6 +145,9 @@ function scheduleRetry() {
   }
 }
 
+/**
+ * Start downloading the available update.
+ */
 function downloadUpdate() {
   if (!autoUpdater) return;
   autoUpdater.downloadUpdate().catch((err) => {
@@ -140,17 +155,27 @@ function downloadUpdate() {
   });
 }
 
+/**
+ * Quit the app and install the downloaded update.
+ */
 function installUpdate() {
   if (!autoUpdater) return;
   autoUpdater.quitAndInstall(false, true);
 }
 
+/**
+ * Set the update channel (e.g. 'latest' or 'beta').
+ * @param {string} channel - The update channel to use
+ */
 function setChannel(channel) {
   if (!autoUpdater) return;
   autoUpdater.channel = channel;
   log.info('Update channel set to:', channel);
 }
 
+/**
+ * Stop all update timers and release references. Called on app shutdown.
+ */
 function cleanup() {
   if (checkInterval) {
     clearInterval(checkInterval);

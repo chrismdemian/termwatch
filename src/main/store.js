@@ -1,3 +1,8 @@
+/**
+ * Persistent key-value store for application settings and state.
+ * Backed by electron-store (unencrypted JSON on disk).
+ * @module store
+ */
 const Store = require('electron-store');
 
 // Note: This store is unencrypted JSON on disk. If sensitive data (API keys,
@@ -27,6 +32,7 @@ const store = new Store({
     isFullscreen: true,
     shellConfig: {},
     updateChannel: 'latest',
+    firstRunCompleted: false,
   },
 });
 

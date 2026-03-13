@@ -30,6 +30,10 @@ let startupPauseTimeout = null;
 let manualFullscreen = false;
 let savedBounds = null;
 
+/**
+ * Enter simulated fullscreen by saving current bounds and resizing to fill the display.
+ * No-op if already fullscreen.
+ */
 function enterFullscreen() {
   if (manualFullscreen || !baseWindow || baseWindow.isDestroyed()) return;
   // Save current bounds for restore
@@ -42,6 +46,10 @@ function enterFullscreen() {
   notifyFullscreenChanged(true);
 }
 
+/**
+ * Leave simulated fullscreen and restore the previously saved window bounds.
+ * No-op if not currently fullscreen.
+ */
 function leaveFullscreen() {
   if (!manualFullscreen || !baseWindow || baseWindow.isDestroyed()) return;
   manualFullscreen = false;
@@ -53,6 +61,9 @@ function leaveFullscreen() {
   notifyFullscreenChanged(false);
 }
 
+/**
+ * Toggle between fullscreen and windowed mode.
+ */
 function toggleFullscreen() {
   if (manualFullscreen) {
     leaveFullscreen();
@@ -61,10 +72,18 @@ function toggleFullscreen() {
   }
 }
 
+/**
+ * Check whether the window is currently in simulated fullscreen.
+ * @returns {boolean} True if fullscreen
+ */
 function isFullscreen() {
   return manualFullscreen;
 }
 
+/**
+ * Notify the app view renderer that the fullscreen state changed.
+ * @param {boolean} isFs - Whether the window is now fullscreen
+ */
 function notifyFullscreenChanged(isFs) {
   try {
     if (appView && !appView.webContents.isDestroyed()) {
@@ -73,6 +92,11 @@ function notifyFullscreenChanged(isFs) {
   } catch (e) { /* disposed during shutdown */ }
 }
 
+/**
+ * Enable or disable the startup autoplay pause.
+ * When enabled, the video view stays muted and a 30-second timeout auto-clears the pause.
+ * @param {boolean} active - Whether to activate or deactivate the startup pause
+ */
 function setStartupPause(active) {
   if (active) {
     startupPauseActive = true;
@@ -83,6 +107,10 @@ function setStartupPause(active) {
   }
 }
 
+/**
+ * Clear the startup pause state and unmute the video view.
+ * Safe to call when the pause is already inactive.
+ */
 function clearStartupPauseMain() {
   if (!startupPauseActive) return;
   startupPauseActive = false;
@@ -187,6 +215,13 @@ const videoFrames = new Map(); // frameId → { webFrame, duration, lastUpdate }
 let activeFrameId = null;
 let staleCleanupInterval = null;
 
+/**
+ * Store references to the video view, app view, and base window.
+ * Must be called before register().
+ * @param {Electron.WebContentsView} video - The video WebContentsView
+ * @param {Electron.WebContentsView} app - The app UI WebContentsView
+ * @param {Electron.BaseWindow} win - The parent BaseWindow
+ */
 function setViews(video, app, win) {
   videoView = video;
   appView = app;
@@ -337,6 +372,10 @@ function setupVideoModeKeyboard() {
   });
 }
 
+/**
+ * Register all IPC handlers for PTY, video, window, store, and update channels.
+ * Also starts the stale video frame cleanup interval.
+ */
 function register() {
   // --- PTY ---
   ipcMain.handle('pty:get-available-shells', (e) => {

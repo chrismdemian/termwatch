@@ -17,6 +17,9 @@ let startupPauseTimer = null;
 let startupPauseTimeout = null;
 let lastUserInteraction = 0;
 
+/**
+ * Clear the startup autoplay suppression state and cancel associated timers.
+ */
 function clearStartupPause() {
   startupPauseActive = false;
   if (startupPauseTimer) {
@@ -55,6 +58,11 @@ function detachVideoListeners() {
   trackedListeners = [];
 }
 
+/**
+ * Attach event listeners to a video element for state tracking and source-change detection.
+ * Detaches listeners from the previous video element if one was tracked.
+ * @param {HTMLVideoElement} video - The video element to track
+ */
 function attachVideoListeners(video) {
   if (currentVideo === video) return;
 
@@ -266,23 +274,41 @@ let videoModeActive = false;
 let mouseIdleTimer = null;
 let mouseMoveHandler = null;
 
+/**
+ * Show the video mode overlay controls and reset the idle hide timer.
+ */
 function showControls() {
   if (!videoModeOverlay) return;
   videoModeOverlay.classList.add('termwatch-vm-visible');
   resetIdleTimer();
 }
 
+/**
+ * Hide the video mode overlay controls.
+ */
 function hideControls() {
   if (!videoModeOverlay) return;
   videoModeOverlay.classList.remove('termwatch-vm-visible');
 }
 
+/**
+ * Reset the idle timer that auto-hides the video mode overlay controls after 2.5 seconds.
+ */
 function resetIdleTimer() {
   if (mouseIdleTimer) clearTimeout(mouseIdleTimer);
   mouseIdleTimer = setTimeout(hideControls, 2500);
 }
 
-// Helper: create an SVG element with attributes and children (bypasses Trusted Types)
+/**
+ * Create an SVG element with attributes and child elements.
+ * Uses DOM APIs instead of innerHTML to bypass Trusted Types CSP.
+ * @param {number} width - SVG width
+ * @param {number} height - SVG height
+ * @param {string} viewBox - SVG viewBox attribute value
+ * @param {Object<string, string>} attrs - Additional attributes to set on the SVG element
+ * @param {Array<{tag: string, attrs: Object<string, string>}>} children - Child elements to create
+ * @returns {SVGElement} The constructed SVG element
+ */
 function createSvg(width, height, viewBox, attrs, children) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -301,6 +327,10 @@ function createSvg(width, height, viewBox, attrs, children) {
   return svg;
 }
 
+/**
+ * Create and inject the video mode overlay with navigation and exit controls.
+ * Only operates in the main frame. Removes any existing overlay first.
+ */
 function createVideoModeOverlay() {
   if (!isMainFrame) return;
 
@@ -375,6 +405,9 @@ function createVideoModeOverlay() {
   showControls();
 }
 
+/**
+ * Remove the video mode overlay and clean up associated event listeners and timers.
+ */
 function removeVideoModeOverlay() {
   if (mouseIdleTimer) {
     clearTimeout(mouseIdleTimer);

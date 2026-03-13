@@ -1,8 +1,19 @@
+/**
+ * App view preload script.
+ * Exposes terminal, video control, window management, and store APIs to the renderer.
+ * Runs with nodeIntegration=true and contextIsolation=false, so APIs are assigned
+ * directly to the window object.
+ * @module app-preload
+ */
 const { ipcRenderer } = require('electron');
 
 // With nodeIntegration: true and contextIsolation: false,
 // we can assign directly to window/global.
 
+/**
+ * Terminal management API for creating and controlling pseudo-terminal sessions.
+ * @type {object}
+ */
 window.terminalAPI = {
   createPty: (cols, rows, shellId) => ipcRenderer.invoke('pty:create', { cols, rows, shellId }),
   getAvailableShells: () => ipcRenderer.invoke('pty:get-available-shells'),
@@ -21,6 +32,10 @@ window.terminalAPI = {
   },
 };
 
+/**
+ * Video playback control API for navigating, playing, seeking, and monitoring state.
+ * @type {object}
+ */
 window.videoControlAPI = {
   navigate: (url) => ipcRenderer.send('video:navigate', url),
   goBack: () => ipcRenderer.send('video:go-back'),
@@ -43,6 +58,10 @@ window.videoControlAPI = {
   },
 };
 
+/**
+ * Window management API for minimize, maximize, close, move, fullscreen, and video mode.
+ * @type {object}
+ */
 window.windowAPI = {
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
@@ -70,6 +89,10 @@ window.windowAPI = {
   },
 };
 
+/**
+ * Persistent settings store API for reading and writing application preferences.
+ * @type {object}
+ */
 window.storeAPI = {
   get: (key) => ipcRenderer.invoke('store:get', key),
   set: (key, value) => ipcRenderer.send('store:set', key, value),

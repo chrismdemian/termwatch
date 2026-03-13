@@ -21,6 +21,10 @@ const ptys = new Map();
 let nextId = 1;
 let cachedShells = null;
 
+/**
+ * Return the default shell command for the current platform.
+ * @returns {string} Shell executable path or name
+ */
 function getDefaultShell() {
   if (process.platform === 'win32') return 'powershell.exe';
   return process.env.SHELL || '/bin/zsh';
@@ -35,6 +39,11 @@ function _existsOnPath(cmd) {
   }
 }
 
+/**
+ * Discover available shells on the current platform.
+ * Results are cached after the first call.
+ * @returns {Array<{id: string, name: string, command: string, args: string[], default: boolean}>} List of available shells
+ */
 function getAvailableShells() {
   if (cachedShells) return cachedShells;
 
@@ -125,6 +134,14 @@ function getAvailableShells() {
   return shells;
 }
 
+/**
+ * Spawn a new pseudo-terminal process.
+ * @param {number} [cols=80] - Terminal column count
+ * @param {number} [rows=24] - Terminal row count
+ * @param {string} [shell] - Shell executable to spawn (defaults to platform default)
+ * @param {string[]} [args] - Arguments to pass to the shell
+ * @returns {{id: number, pid: number}|null} PTY identifier and process ID, or null on failure
+ */
 function createPty(cols = 80, rows = 24, shell, args) {
   if (!pty) {
     log.error('node-pty not available');
@@ -154,11 +171,22 @@ function createPty(cols = 80, rows = 24, shell, args) {
   return { id, pid: ptyProcess.pid };
 }
 
+/**
+ * Write data to a PTY's stdin.
+ * @param {number} id - PTY identifier
+ * @param {string} data - Data to write
+ */
 function writePty(id, data) {
   const p = ptys.get(id);
   if (p) p.write(data);
 }
 
+/**
+ * Resize a PTY to new dimensions.
+ * @param {number} id - PTY identifier
+ * @param {number} cols - New column count
+ * @param {number} rows - New row count
+ */
 function resizePty(id, cols, rows) {
   const p = ptys.get(id);
   if (p) {
@@ -170,6 +198,12 @@ function resizePty(id, cols, rows) {
   }
 }
 
+/**
+ * Destroy a PTY process and clean up its resources.
+ * On Windows, uses tree-kill to terminate the entire process tree.
+ * @param {number} id - PTY identifier
+ * @returns {Promise<void>} Resolves when the process has been terminated
+ */
 function destroyPty(id) {
   const p = ptys.get(id);
   if (!p) return Promise.resolve();
@@ -206,10 +240,19 @@ function destroyPty(id) {
   });
 }
 
+/**
+ * Get the raw node-pty process for a given PTY ID.
+ * @param {number} id - PTY identifier
+ * @returns {object|undefined} The node-pty process, or undefined if not found
+ */
 function getPty(id) {
   return ptys.get(id);
 }
 
+/**
+ * Gracefully destroy all active PTY processes.
+ * @returns {Promise<void>} Resolves when all processes have been terminated
+ */
 async function destroyAll() {
   const promises = [];
   for (const [id] of ptys) {
@@ -218,6 +261,10 @@ async function destroyAll() {
   await Promise.allSettled(promises);
 }
 
+/**
+ * Synchronously force-kill all PTY processes. Used as a last-resort
+ * cleanup during process exit when async operations are not possible.
+ */
 function forceKillAll() {
   for (const [id, p] of ptys) {
     try {
