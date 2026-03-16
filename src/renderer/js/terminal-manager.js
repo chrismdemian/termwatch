@@ -17,6 +17,7 @@ class TerminalManager {
       fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace",
       cursorStyle: 'bar',
       cursorBlink: true,
+      cursorInactiveStyle: 'outline',
       scrollback: 1000,
       theme: {
         background: 'transparent',
@@ -81,7 +82,6 @@ class TerminalManager {
     // Load canvas addon after opening
     try {
       terminal.loadAddon(new CanvasAddon());
-      log.info('Canvas addon loaded');
     } catch (e) {
       log.warn('Canvas addon failed, using default renderer:', e.message);
     }

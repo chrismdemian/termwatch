@@ -22,6 +22,12 @@
   padding: 4px;
 }
 
+.terminal-panel .xterm-helper-textarea {
+  opacity: 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
 .terminal-panel .xterm-viewport {
   background: transparent !important;
 }
