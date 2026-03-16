@@ -64,6 +64,9 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     show: false,
+    icon: app.isPackaged
+      ? path.join(process.resourcesPath, 'icon.png')
+      : path.join(__dirname, '..', '..', 'build', 'icon.png'),
   });
 
   // --- Video view (bottom layer) ---

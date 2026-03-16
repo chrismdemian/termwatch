@@ -20,6 +20,10 @@ asar: true
 asarUnpack:
   - "**/node_modules/@lydell/node-pty*/**"
 
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+
 win:
   target:
     - target: nsis
