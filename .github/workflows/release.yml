@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -18,8 +21,8 @@ jobs:
       - run: npm test
       - run: npm audit --audit-level=high --omit=dev
       - run: npx electron-rebuild
-      - name: Build
-        run: npm run build:win
+      - name: Build and publish
+        run: npm run build:win -- --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
@@ -28,6 +31,7 @@ jobs:
           path: dist/*.exe
 
   build-macos:
+    needs: build-windows
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +43,8 @@ jobs:
       - run: npm test
       - run: npm audit --audit-level=high --omit=dev
       - run: npx electron-rebuild
-      - name: Build
-        run: npm run build:mac
+      - name: Build and publish
+        run: npm run build:mac -- --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4

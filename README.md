@@ -1,53 +1,108 @@
+<div align="center">
+
 # TermWatch
 
-Watch video content behind transparent terminal panels. An Electron desktop app that layers terminal emulators over a web browser, so you can code (or pretend to) while watching videos.
+### Code while you watch. Watch while you code.
+
+Transparent terminal panels layered over a full web browser with DRM support.
+Run your shell on top of any streaming service — Netflix, YouTube, Twitch, or anything else.
+
+<!-- TODO: Replace with actual screenshot/GIF -->
+![Demo](https://via.placeholder.com/800x450.png?text=REPLACE+WITH+DEMO+GIF)
+
+[![GitHub Stars](https://img.shields.io/github/stars/chrismdemian/termwatch?style=flat&logo=github&cacheSeconds=300)](https://github.com/chrismdemian/termwatch)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey)](https://github.com/chrismdemian/termwatch/releases)
+[![Latest Release](https://img.shields.io/github/v/release/chrismdemian/termwatch?include_prereleases&label=download)](https://github.com/chrismdemian/termwatch/releases/latest)
+
+</div>
+
+---
+
+## Download
+
+Grab the latest installer for your platform — no build tools needed.
+
+| Platform | Download | Notes |
+|----------|----------|-------|
+| **Windows** | [`.exe` installer](https://github.com/chrismdemian/termwatch/releases/latest) | NSIS wizard, auto-updates built in |
+| **macOS** | [`.dmg` installer](https://github.com/chrismdemian/termwatch/releases/latest) | Separate Intel and Apple Silicon builds |
+
+After install, TermWatch checks for updates automatically. When one is available, a badge appears on the settings icon — updates are never downloaded without your consent.
+
+---
 
 ## Features
 
-**Terminal Overlay**
-- Transparent terminal panels overlaid on a web browser video view
-- Multiple layouts: 1x1, 1x2, 2x1, 2x2, 1x3
-- Per-terminal shell selection (PowerShell, CMD, Git Bash, WSL, zsh, bash, fish)
-- Adjustable opacity, text shadow, fonts, colors, and cursor styles
+| Feature | Description |
+|---------|-------------|
+| **Transparent terminals** | Shell panels overlaid on a web browser — adjust opacity, fonts, colors, cursor style |
+| **Multiple layouts** | 1x1, 1x2, 2x1, 2x2, 1x3 — cycle with a hotkey |
+| **Any shell** | PowerShell, CMD, Git Bash, WSL, zsh, bash, fish — per-terminal selection |
+| **DRM streaming** | Widevine support via CastLabs Electron — works with Netflix, Disney+, etc. |
+| **Video mode** | Hide terminals, browse and watch with on-screen controls |
+| **Theater mode** | Distraction-free — hide the controls bar entirely |
+| **Playback controls** | Play/pause, seek, volume, time display — all from keyboard or UI |
+| **Bookmarks bar** | Quick-access bookmarks for your favorite sites |
+| **Persistent sessions** | Window position, layout, bookmarks, last URL — all restored on launch |
+| **Keyboard-driven** | Shortcuts for everything — press `?` to see them all |
+| **Auto-updates** | Stable and beta channels with download progress |
 
-**Video Browser**
-- Full web browser with navigation, bookmarks bar, and URL input
-- DRM support via CastLabs Electron (Widevine) for streaming services
-- Video mode: hide terminals and browse with on-screen navigation controls
-- Theater mode: hide the controls bar for distraction-free viewing
-- Playback controls: play/pause, seek, volume, time display
+---
 
-**Quality of Life**
-- Persistent sessions — window position, layout, bookmarks, and last URL restored on launch
-- Keyboard shortcuts for everything (press `?` in the app to see them all)
-- First-run EULA and privacy acknowledgment
-- Auto-updates with download progress and channel selection (stable/beta)
-- Fullscreen mode with window controls in the controls bar
+## Screenshots
 
-## Installation
+### Terminal Overlay
 
-### Windows
+<!-- TODO: Replace with actual screenshot -->
+![Terminal Overlay](https://via.placeholder.com/800x500.png?text=REPLACE+WITH+TERMINAL+OVERLAY+SCREENSHOT)
 
-Download the latest `.exe` installer from [Releases](https://github.com/nicholasgriffintn/termwatch/releases). Run the installer — auto-updates are built in.
+### Video Mode
 
-### macOS
+<!-- TODO: Replace with actual screenshot -->
+![Video Mode](https://via.placeholder.com/800x500.png?text=REPLACE+WITH+VIDEO+MODE+SCREENSHOT)
 
-Download the latest `.dmg` from [Releases](https://github.com/nicholasgriffintn/termwatch/releases). Drag TermWatch to Applications.
+### Settings
 
-### From Source
+<!-- TODO: Replace with actual screenshot -->
+![Settings](https://via.placeholder.com/800x400.png?text=REPLACE+WITH+SETTINGS+SCREENSHOT)
 
-```bash
-git clone https://github.com/nicholasgriffintn/termwatch.git
-cd termwatch
-npm install
-npm start
+---
+
+## How It Works
+
 ```
+┌─────────────────────────────────────┐
+│            BaseWindow               │
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │    App View (top layer)       │  │
+│  │    Transparent background     │  │
+│  │    xterm.js terminal panels   │  │
+│  │    Controls, bookmarks, UI    │  │
+│  ├───────────────────────────────┤  │
+│  │    Video View (bottom layer)  │  │
+│  │    Full web browser           │  │
+│  │    Widevine DRM               │  │
+│  │    Isolated session           │  │
+│  └───────────────────────────────┘  │
+└─────────────────────────────────────┘
+```
+
+Two `WebContentsView` layers stacked inside a frameless `BaseWindow`:
+
+- **Video view** (bottom) — a full Chromium browser with DRM support, running in its own isolated session. Loads any website.
+- **App view** (top) — transparent overlay with xterm.js terminals, playback controls, bookmarks bar, and settings. Communicates with shells via node-pty.
+
+The views never talk directly — all communication routes through IPC in the main process.
+
+---
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `?` | Show keyboard shortcuts |
+| `?` | Show all shortcuts |
 | `Ctrl+Shift+,` | Open settings |
 | `Escape` | Close modal / exit mode |
 | `F11` | Toggle fullscreen |
@@ -57,127 +112,78 @@ npm start
 | `Ctrl+Shift+1–4` | Focus terminal 1–4 |
 | `Ctrl+Shift+L` | Cycle layout |
 | `Ctrl+Shift+R` | Restart all terminals |
-| `Ctrl+Shift+↑` | Increase opacity |
-| `Ctrl+Shift+↓` | Decrease opacity |
+| `Ctrl+Shift+↑/↓` | Increase / decrease opacity |
 | `Ctrl+Shift+B` | Toggle bookmarks bar |
-| `Alt+←` | Go back (video mode) |
-| `Alt+→` | Go forward (video mode) |
+| `Alt+←/→` | Navigate back / forward |
 
-## Settings Reference
+---
 
-All settings are persisted locally via `electron-store`.
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `opacity` | `0.3` | Terminal background opacity (0–1) |
-| `shadowIntensity` | `1.0` | Text shadow intensity (0–1) |
-| `terminalFontSize` | `14` | Terminal font size (8–32) |
-| `terminalFontFamily` | `JetBrains Mono` | Terminal font family |
-| `terminalTextColor` | `#e8e6e3` | Terminal foreground color |
-| `terminalSelectionColor` | `#d4915e` | Terminal selection highlight color |
-| `terminalCursorStyle` | `bar` | Cursor style: block, underline, or bar |
-| `terminalCursorBlink` | `true` | Whether the cursor blinks |
-| `terminalScrollback` | `1000` | Scrollback buffer lines (100–50000) |
-| `autoHideDelay` | `3000` | Controls bar auto-hide delay in ms (0 = disabled) |
-| `defaultLayout` | `1x1` | Layout used on first launch |
-| `startInVideoMode` | `false` | Start directly in video mode |
-| `disableHardwareAcceleration` | `false` | Disable GPU acceleration (requires restart) |
-| `updateChannel` | `latest` | Update channel: `latest` (stable) or `beta` |
-| `shellConfig` | `{}` | Per-layout, per-terminal shell selection |
-
-## Architecture
-
-TermWatch uses two stacked `WebContentsView` instances inside a `BaseWindow`:
-
-```
-┌─────────────────────────────────┐
-│         BaseWindow              │
-│  ┌───────────────────────────┐  │
-│  │  App View (top layer)     │  │
-│  │  - Transparent background │  │
-│  │  - Terminal panels (xterm) │  │
-│  │  - Controls bar           │  │
-│  │  - nodeIntegration: true  │  │
-│  ├───────────────────────────┤  │
-│  │  Video View (bottom layer)│  │
-│  │  - Web browser            │  │
-│  │  - contextIsolation: true │  │
-│  │  - Widevine DRM           │  │
-│  └───────────────────────────┘  │
-└─────────────────────────────────┘
-```
-
-**Main Process** (`src/main/`) — Window creation, IPC routing, PTY management, auto-updates, persistent storage.
-
-**Preload Scripts** (`src/preload/`) — Bridge between renderer and main process. App preload exposes `terminalAPI`, `videoControlAPI`, `windowAPI`, `storeAPI`. Video preload detects `<video>` elements and proxies playback commands.
-
-**Renderer** (`src/renderer/`) — Terminal UI (xterm.js), layout management, settings modal, controls bar, bookmarks, hotkeys, help modal, first-run wizard.
-
-IPC communication flows through the main process — the app view never communicates directly with the video view. See [docs/IPC-CHANNELS.md](docs/IPC-CHANNELS.md) for the full channel reference.
-
-## Development
+## Build from Source
 
 ```bash
-npm start          # Run the app
-npm test           # Run unit/integration tests (Vitest)
-npm run test:e2e   # Run Playwright E2E tests
-npm run lint       # Lint source code
-npm run licenses   # Generate THIRD-PARTY-LICENSES.txt
-npm run icons      # Regenerate app icons from SVG
-npm run version:bump -- patch  # Bump version (patch/minor/major)
+git clone https://github.com/chrismdemian/termwatch.git
+cd termwatch
+npm install
+npm start
 ```
 
-## Building
+### Development
 
 ```bash
-# Windows
-npm run build:win
-
-# macOS
-npm run build:mac
+npm start              # Run the app
+npm test               # Unit + integration tests (Vitest)
+npm run test:e2e       # E2E tests (Playwright)
+npm run lint           # ESLint with security plugins
 ```
 
-Built releases are created by GitHub Actions on tagged pushes. See `.github/workflows/release.yml`.
+### Building Installers
+
+```bash
+npm run build:win      # Windows NSIS installer
+npm run build:mac      # macOS DMG (universal binary)
+```
+
+Tagged pushes trigger automated builds via GitHub Actions — see [release.yml](.github/workflows/release.yml).
+
+---
 
 ## Contributing
 
-1. Create a feature branch — never commit directly to master
-2. Make changes
-3. Run `npm run lint` (0 errors required) and `npm test` (all tests pass)
+1. Fork the repo and create a feature branch
+2. Make your changes
+3. Run `npm run lint` (0 errors) and `npm test` (all passing)
 4. For UI changes, verify with `npm start`
-5. Push to feature branch and open a PR
+5. Open a pull request
 
-**Code style:**
-- ESLint with security plugins — no lint errors allowed
-- CommonJS modules in main/preload/renderer (nodeIntegration app)
-- CSS custom properties for all colors, timing, and easing (see `src/renderer/css/app.css`)
-- Tests use Vitest with happy-dom for renderer tests
+See the full [Architecture Decision Records](docs/adr/) for context on major technical choices.
 
-## Auto-Updates
-
-Built releases check for updates automatically. When an update is available, an indicator appears on the settings gear icon. Updates are never downloaded without user consent — click Download in the settings modal to proceed.
-
-## Third-Party Licenses
-
-Production dependency licenses are listed in [THIRD-PARTY-LICENSES.txt](THIRD-PARTY-LICENSES.txt). Regenerate with `npm run licenses`.
+---
 
 ## Legal
 
 - [End User License Agreement](docs/EULA.md)
 - [Privacy Policy](docs/PRIVACY.md)
-- [MIT License](LICENSE)
 - [Security Policy](SECURITY.md)
+- [Third-Party Licenses](THIRD-PARTY-LICENSES.txt)
 
-## Disclaimer
+### Disclaimer
 
-TermWatch is an independent project and is **not endorsed by, affiliated with, or sponsored by any streaming service or content provider**.
+TermWatch is an independent project — **not endorsed by, affiliated with, or sponsored by any streaming service or content provider**.
 
-**DRM:** TermWatch does not bypass, circumvent, decrypt, or interfere with digital rights management (DRM) protections. It uses a legitimately licensed Widevine build. A valid subscription to any streaming service you access is required.
+TermWatch does not bypass, circumvent, or interfere with DRM protections. It uses a legitimately licensed Widevine build. A valid subscription to any streaming service you access is required. Use with streaming services is at your own risk — some providers may consider overlay tools a violation of their Terms of Service.
 
-**Streaming Services:** Use of TermWatch with streaming services is at your own risk. Some streaming services may consider overlay tools or modified user agents a violation of their Terms of Service. You are solely responsible for complying with the Terms of Service of any service you access through TermWatch.
-
-**No Warranty:** This software is provided "as is" without warranty of any kind. See the [MIT License](LICENSE) for full terms.
+---
 
 ## License
 
 [MIT](LICENSE)
+
+---
+
+<div align="center">
+
+**Your terminal. Your stream. One window.**
+
+[Download](https://github.com/chrismdemian/termwatch/releases/latest) · [Report a Bug](https://github.com/chrismdemian/termwatch/issues) · [Request a Feature](https://github.com/chrismdemian/termwatch/issues)
+
+</div>
