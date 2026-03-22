@@ -5,9 +5,10 @@
   left: 0;
   right: 0;
   height: 44px;
-  background: var(--bg-controls);
-  border-top: 1px solid var(--border);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   padding: 0 12px;
   display: flex;
   align-items: center;
@@ -15,6 +16,7 @@
   z-index: 99;
   animation: slideUp var(--duration-normal) var(--easing);
   transition: opacity var(--duration-normal) ease-out;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Hide bookmarks bar when controls auto-hide */
@@ -52,8 +54,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,9 +63,13 @@
   flex-shrink: 0;
   overflow: hidden;
   transition: transform var(--duration-fast) ease-out,
+              background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
               box-shadow var(--duration-fast) ease-out;
   animation: bookmarkPop var(--duration-normal) var(--easing);
   position: relative;
+  box-shadow: var(--glass-inset),
+              0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes bookmarkPop {
@@ -81,8 +87,16 @@
 }
 
 .bookmark-item:hover {
-  transform: scale(1.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transform: scale(1.12);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--glass-inset),
+              0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.bookmark-item:active {
+  transform: scale(1.04);
+  transition-duration: 60ms;
 }
 
 .bookmark-item img {
@@ -96,6 +110,7 @@
   font-weight: 600;
   color: var(--accent);
   text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 /* Tooltip */
@@ -105,10 +120,12 @@
   bottom: 110%;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-deep);
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--text-primary);
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
   font-size: 11px;
   white-space: nowrap;
   max-width: 250px;
@@ -117,7 +134,8 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-fast) ease-out;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-shadow-subtle);
   z-index: 200;
 }
 
@@ -131,7 +149,7 @@
   height: 32px;
   border-radius: 50%;
   background: none;
-  border: 1px dashed var(--border);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
   color: var(--text-muted);
   display: flex;
   align-items: center;
@@ -143,8 +161,10 @@
 
 .bookmark-add-btn:hover {
   border-color: var(--accent);
+  border-style: solid;
   color: var(--accent);
-  background: var(--accent-glow);
+  background: rgba(224, 152, 88, 0.1);
+  box-shadow: 0 0 12px rgba(224, 152, 88, 0.15);
 }
 
 /* Bookmark removal animation */

@@ -1,20 +1,21 @@
 /* Terminal Panel */
 .terminal-panel {
   background: var(--bg-panel);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03),
-              0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04),
+              0 4px 16px rgba(0, 0, 0, 0.2);
   transition: border-color var(--duration-fast) ease-out,
               box-shadow var(--duration-fast) ease-out;
 }
 
 .terminal-panel.focused {
-  border-color: var(--border-focus);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03),
-              0 2px 8px rgba(0, 0, 0, 0.3);
+  border-color: rgba(224, 152, 88, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+              0 4px 16px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(224, 152, 88, 0.1);
 }
 
 .terminal-panel .xterm {
@@ -73,8 +74,8 @@
   top: 0;
   right: 0;
   z-index: 10;
-  padding: 2px;
-  gap: 2px;
+  padding: 4px;
+  gap: 3px;
 }
 
 .terminal-panel:hover .terminal-panel-header {
@@ -82,23 +83,32 @@
 }
 
 .panel-header-btn {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 10px;
   transition: all var(--duration-fast) ease-out;
+  box-shadow: var(--glass-inset);
 }
 
 .panel-header-btn:hover {
-  background: var(--surface-hover);
+  background: rgba(255, 255, 255, 0.18);
   color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.panel-header-btn:active {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(0.92);
 }
 
 /* PTY exit overlay */
@@ -108,33 +118,40 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(12, 12, 20, 0.8);
+  background: rgba(10, 10, 20, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   z-index: 20;
 }
 
 .pty-exit-overlay span {
   color: var(--text-secondary);
   font-size: 12px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pty-exit-overlay .btn {
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--glass-radius-sm);
+  padding: 6px 14px;
   font-size: 12px;
   cursor: pointer;
   transition: all var(--duration-fast) ease-out;
+  box-shadow: var(--glass-shadow-subtle),
+              var(--glass-inset);
 }
 
 .pty-exit-overlay .btn:hover {
-  background: var(--surface-hover);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
 }
 
 /* Resize dividers */
@@ -146,7 +163,7 @@
 
 .resize-divider:hover,
 .resize-divider.active {
-  background: var(--accent-glow);
+  background: rgba(224, 152, 88, 0.15);
 }
 
 .resize-divider.horizontal {
