@@ -72,7 +72,7 @@ class Hotkeys {
             break;
           case 'Space':
             e.preventDefault();
-            window.videoControlAPI.togglePlay();
+            this.controls.togglePlay();
             break;
           case 'Digit1':
             e.preventDefault();

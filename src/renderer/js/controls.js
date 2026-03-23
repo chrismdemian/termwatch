@@ -11,6 +11,10 @@ class Controls {
     this._seekAnimId = null;
     this._userSeeking = false;
     this._autoHideDelay = 3000;
+    // Optimistic play/pause: tracked separately so it never permanently desyncs.
+    // Expires after 500ms if no confirming state callback arrives.
+    this._optimisticPaused = null; // null = not active
+    this._optimisticExpiry = 0;
     this._init();
   }
 
@@ -62,23 +66,7 @@ class Controls {
 
     // Play/Pause
     document.getElementById('btn-play-pause').addEventListener('click', () => {
-      window.videoControlAPI.togglePlay();
-      // Optimistic UI: toggle icon immediately instead of waiting for state round-trip.
-      // Only apply when a video is loaded (duration > 0) to avoid permanent desync.
-      if (this.videoState.duration > 0) {
-        // Capture predicted time before toggling state
-        const predicted = this._getPredictedTime();
-        this.videoState.paused = !this.videoState.paused;
-        // Update interpolation anchor to predicted time (don't modify videoState.currentTime)
-        this._lastKnownTime = predicted;
-        this._lastUpdateTs = performance.now();
-        this._updateUI();
-        if (!this.videoState.paused && this.videoState.duration > 0) {
-          this._startSeekAnimation();
-        } else {
-          this._stopSeekAnimation();
-        }
-      }
+      this.togglePlay();
     });
 
     // Seek bar
@@ -131,6 +119,7 @@ class Controls {
       // Reset display to 0 instead of showing stale time from the previous source
       if (!isFinite(state.duration) || state.duration <= 0) {
         this._stopSeekAnimation();
+        this._optimisticPaused = null;
         this._lastKnownTime = 0;
         this._lastUpdateTs = performance.now();
         this.videoState.duration = 0;
@@ -150,6 +139,7 @@ class Controls {
       }
 
       this.videoState = state;
+      this._optimisticPaused = null; // real state arrived — clear optimistic
       this._lastKnownTime = state.currentTime;
       this._lastUpdateTs = performance.now();
       this._updateUI();
@@ -216,7 +206,11 @@ class Controls {
   }
 
   _updateUI() {
-    const { duration, paused, volume } = this.videoState;
+    const { duration, volume } = this.videoState;
+    // Use optimistic paused state if still valid, otherwise use real state
+    const paused = (this._optimisticPaused !== null && performance.now() < this._optimisticExpiry)
+      ? this._optimisticPaused
+      : this.videoState.paused;
     // Use interpolation anchor for display time — it's always the most recent
     // (updated by state callbacks, seek, and play/pause)
     const displayTime = this._lastKnownTime;
@@ -278,7 +272,10 @@ class Controls {
     const INTERVAL = 66; // ~15fps — sufficient for time display updates
     let lastFrame = 0;
     const tick = (now) => {
-      if (this._userSeeking || this.videoState.paused) {
+      const paused = (this._optimisticPaused !== null && performance.now() < this._optimisticExpiry)
+        ? this._optimisticPaused
+        : this.videoState.paused;
+      if (this._userSeeking || paused) {
         this._seekAnimId = null;
         return;
       }
@@ -308,6 +305,23 @@ class Controls {
     const elapsed = (performance.now() - this._lastUpdateTs) / 1000;
     const duration = this.videoState.duration;
     return Math.min(this._lastKnownTime + elapsed, duration || Infinity);
+  }
+
+  togglePlay() {
+    window.videoControlAPI.togglePlay();
+    if (this.videoState.duration > 0) {
+      const predicted = this._getPredictedTime();
+      this._optimisticPaused = !this.videoState.paused;
+      this._optimisticExpiry = performance.now() + 500;
+      this._lastKnownTime = predicted;
+      this._lastUpdateTs = performance.now();
+      this._updateUI();
+      if (!this._optimisticPaused && this.videoState.duration > 0) {
+        this._startSeekAnimation();
+      } else {
+        this._stopSeekAnimation();
+      }
+    }
   }
 
   pauseAutoHide() {
