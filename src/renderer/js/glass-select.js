@@ -167,12 +167,13 @@ class GlassSelect {
     menu.style.left = rect.left + 'px';
     menu.style.minWidth = rect.width + 'px';
 
-    if (spaceAbove > menuHeight + 8 || spaceAbove > spaceBelow) {
+    // Prefer opening downward; only open upward if not enough space below
+    if (spaceBelow < menuHeight + 8 && spaceAbove > menuHeight + 8) {
       // Open upward
       menu.style.top = '';
       menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
     } else {
-      // Open downward
+      // Open downward (default)
       menu.style.bottom = '';
       menu.style.top = (rect.bottom + 6) + 'px';
     }
