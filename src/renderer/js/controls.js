@@ -223,9 +223,10 @@ class Controls {
     this._els.timeCurrent.textContent = this._formatTime(displayTime);
     this._els.timeDuration.textContent = this._formatTime(duration);
 
-    // Seek bar — only set directly when paused or no animation running
-    // (smooth animation handles it during playback)
-    if (duration > 0 && (paused || !this._seekAnimId)) {
+    // Seek bar — always set from state callbacks to prevent stale values
+    // when the view is hidden (RAF doesn't fire). The animation will
+    // overwrite this on its next tick for smooth interpolation.
+    if (duration > 0) {
       this._els.seekBar.value = (displayTime / duration) * 100;
     }
 

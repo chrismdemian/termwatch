@@ -294,6 +294,17 @@ function sendToActiveFrame(channel, data) {
 }
 
 /**
+ * Request fresh video state from the video view.
+ * Sends to the active frame and the main frame as fallback.
+ */
+function requestVideoState() {
+  if (!videoView || videoView.webContents.isDestroyed()) return;
+  if (!sendToActiveFrame('video:request-state')) {
+    videoView.webContents.send('video:request-state');
+  }
+}
+
+/**
  * Exit video mode from anywhere — main process failsafe.
  * Safe to call even if not in video mode.
  */
@@ -312,6 +323,8 @@ function exitVideoMode() {
       log.warn('View disposed during exitVideoMode:', e.message);
     }
   }
+  // Request fresh state from the video so controls resync after being hidden
+  requestVideoState();
 }
 
 /**
@@ -581,6 +594,8 @@ function register() {
         videoView.webContents.send('video:hide-exit-overlay');
       }
       appView.setVisible(true);
+      // Request fresh state so controls resync after being hidden
+      requestVideoState();
     }
   });
 

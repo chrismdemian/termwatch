@@ -228,6 +228,20 @@ ipcRenderer.on('video:seek', (e, time) => {
   }
 });
 
+ipcRenderer.on('video:request-state', () => {
+  const v = findVideo();
+  if (v) {
+    ipcRenderer.send('video:state', {
+      currentTime: v.currentTime,
+      duration: v.duration || 0,
+      paused: v.paused,
+      volume: v.volume,
+      muted: v.muted,
+      frameId,
+    });
+  }
+});
+
 ipcRenderer.on('video:seek-relative', (e, delta) => {
   const v = findVideo();
   if (v && isFinite(delta)) {
