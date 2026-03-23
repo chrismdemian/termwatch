@@ -133,6 +133,8 @@ class Hotkeys {
       if (this.videoMode) {
         this.videoMode = false;
         document.getElementById('video-mode-indicator').classList.add('hidden');
+        // Start auto-hide timer so controls bar fades out smoothly
+        this.controls.resumeAutoHide();
       }
     });
 
@@ -163,6 +165,9 @@ class Hotkeys {
       indicator.style.animation = '';
     } else {
       indicator.classList.add('hidden');
+      // Start auto-hide timer so the controls bar fades out smoothly
+      // instead of flashing when the app view becomes visible again
+      this.controls.resumeAutoHide();
     }
   }
 
