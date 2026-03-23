@@ -149,9 +149,10 @@ html, body {
 /* Video Mode Indicator — floating glass toast */
 .video-mode-indicator {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
   background: rgba(20, 20, 35, 0.85);
   color: var(--text-primary);
   padding: 18px 30px;
@@ -164,7 +165,6 @@ html, body {
               var(--glass-inset),
               var(--glass-inset-strong);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  will-change: transform, opacity;
   animation: fadeInOut 3s ease-out forwards;
 }
 
@@ -180,10 +180,10 @@ html, body {
 }
 
 @keyframes fadeInOut {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
-  10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  70% { opacity: 1; }
-  100% { opacity: 0; pointer-events: none; }
+  0% { opacity: 0; transform: scale(0.96); }
+  10% { opacity: 1; transform: scale(1); }
+  70% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); pointer-events: none; }
 }
 
 /* Theater Exit */

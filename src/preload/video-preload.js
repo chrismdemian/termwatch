@@ -130,6 +130,7 @@ function attachVideoListeners(video) {
     ['timeupdate', sendState],
     ['play', sendState],
     ['pause', sendState],
+    ['seeked', sendState],
     ['volumechange', sendState],
     ['loadedmetadata', sendState],
     ['durationchange', onDurationChange],
