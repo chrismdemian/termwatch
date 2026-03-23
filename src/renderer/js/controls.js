@@ -132,14 +132,13 @@ class Controls {
         return;
       }
 
-      // Detect source change (ad ↔ content): dramatic duration shift
+      // Detect source change (ad ↔ content): significant duration shift.
+      // Thresholds catch ad↔ad (30s→60s) and ad↔content (30s→120s) transitions.
       const prevDuration = this.videoState.duration;
-      if (prevDuration > 0 && state.duration > 0) {
-        const ratio = state.duration / prevDuration;
-        if (ratio < 0.2 || ratio > 5) {
-          // Source changed — reset to new source's time
-          this._stopSeekAnimation();
-        }
+      const sourceChanged = prevDuration > 0 && state.duration > 0
+        && (state.duration / prevDuration < 0.5 || state.duration / prevDuration > 2);
+      if (sourceChanged) {
+        this._stopSeekAnimation();
       }
 
       this.videoState = state;
@@ -149,7 +148,16 @@ class Controls {
       if (this._optimisticPaused !== null && state.paused === this._optimisticPaused) {
         this._optimisticPaused = null;
       }
-      this._lastKnownTime = state.currentTime;
+      // Clamp time to duration — during source transitions, currentTime from
+      // the old source can exceed the new source's duration, pinning the seek
+      // bar at 100%.  On source change, reset to 0 since we're starting fresh.
+      if (sourceChanged) {
+        this._lastKnownTime = 0;
+      } else {
+        this._lastKnownTime = (state.duration > 0)
+          ? Math.min(state.currentTime, state.duration)
+          : state.currentTime;
+      }
       this._lastUpdateTs = performance.now();
       this._updateUI();
       // Start or stop smooth seek animation based on effective play state
@@ -228,9 +236,11 @@ class Controls {
   _updateUI() {
     const { duration, volume } = this.videoState;
     const paused = this._effectivePaused();
-    // Use interpolation anchor for display time — it's always the most recent
-    // (updated by state callbacks, seek, and play/pause)
-    const displayTime = this._lastKnownTime;
+    // Use interpolation anchor for display time, clamped to duration so the
+    // seek bar can't pin at 100% during source transitions
+    const displayTime = (duration > 0)
+      ? Math.min(this._lastKnownTime, duration)
+      : this._lastKnownTime;
 
     // Play/pause icons
     this._els.iconPlay.classList.toggle('hidden', !paused);
