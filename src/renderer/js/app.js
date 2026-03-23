@@ -12,6 +12,7 @@ const Titlebar = require(path.join(jsDir, 'titlebar'));
 const Settings = require(path.join(jsDir, 'settings'));
 const HelpModal = require(path.join(jsDir, 'help-modal'));
 const FirstRunModal = require(path.join(jsDir, 'first-run'));
+const GlassSelect = require(path.join(jsDir, 'glass-select'));
 
 // Global error handlers for renderer
 window.addEventListener('error', (event) => {
@@ -68,6 +69,9 @@ async function init() {
     // Load saved settings and initialize layout
     await settings.load();
     settings.setupAutoSave();
+
+    // Replace native <select> elements with glass dropdowns
+    GlassSelect.initAll();
 
     // Start in video mode if configured
     if (settings.getValue('startInVideoMode')) {

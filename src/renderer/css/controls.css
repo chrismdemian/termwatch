@@ -5,8 +5,8 @@
   left: 0;
   right: 0;
   height: 48px;
-  background: rgba(255, 255, 255, 0.12);
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(20, 20, 35, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   padding: 0 12px;
@@ -283,7 +283,7 @@ input[type="range"]:active::-webkit-slider-thumb {
 }
 
 .layout-select option {
-  background: #1a1a2e;
+  background: #14142a;
   color: var(--text-primary);
 }
 

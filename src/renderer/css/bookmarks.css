@@ -5,8 +5,8 @@
   left: 0;
   right: 0;
   height: 44px;
-  background: rgba(255, 255, 255, 0.1);
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(20, 20, 35, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   padding: 0 12px;

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/controls.css">
   <link rel="stylesheet" href="css/bookmarks.css">
   <link rel="stylesheet" href="../../node_modules/@simonwep/pickr/dist/themes/nano.min.css">
+  <link rel="stylesheet" href="css/glass-select.css">
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/help.css">
   <link rel="stylesheet" href="css/first-run.css">
@@ -138,17 +139,20 @@
   <!-- First-Run Modal -->
   <div id="first-run-overlay" class="first-run-overlay" role="dialog" aria-modal="true" aria-label="Welcome to TermWatch">
     <div class="first-run-modal">
+      <div class="first-run-modal-scroll">
       <div class="first-run-header">
         <div class="first-run-title">Welcome to TermWatch</div>
         <div class="first-run-subtitle">Please review the following before getting started</div>
       </div>
       <div id="first-run-body"></div>
+      </div>
     </div>
   </div>
 
   <!-- Help Modal -->
   <div id="help-overlay" class="help-overlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
     <div class="help-modal" id="help-modal">
+      <div class="help-modal-scroll">
       <div class="help-header">
         <span class="help-title">Keyboard Shortcuts</span>
         <button class="help-close-btn" id="help-close-btn" aria-label="Close help">
@@ -156,12 +160,14 @@
         </button>
       </div>
       <div id="help-body"></div>
+      </div>
     </div>
   </div>
 
   <!-- Settings Modal -->
   <div id="settings-overlay" class="settings-overlay" role="dialog" aria-modal="true" aria-label="Settings">
     <div class="settings-modal" id="settings-modal">
+      <div class="settings-modal-scroll">
       <div class="settings-header">
         <span class="settings-title">Settings</span>
         <button class="settings-close-btn" id="settings-close-btn" aria-label="Close settings">
@@ -344,6 +350,7 @@
       </div>
 
       <div class="settings-version" id="settings-version"></div>
+      </div>
     </div>
   </div>
 

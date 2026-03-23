@@ -22,61 +22,49 @@
 /* Modal — frosted glass card */
 .first-run-modal {
   position: relative;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(20, 20, 35, 0.65);
   backdrop-filter: var(--glass-blur-strong);
   -webkit-backdrop-filter: var(--glass-blur-strong);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: var(--glass-radius-lg);
   width: 520px;
   max-height: 80vh;
-  overflow-y: auto;
-  padding: 28px;
+  overflow: hidden;
   transform: scale(0.96);
   transition: transform var(--duration-slow) var(--easing);
   box-shadow: var(--glass-shadow-lg),
               var(--glass-inset),
               var(--glass-inset-strong);
-  isolation: isolate;
-}
-
-/* Glass shine overlay */
-.first-run-modal::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60%;
-  border-radius: var(--glass-radius-lg) var(--glass-radius-lg) 0 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.0) 100%
-  );
-  pointer-events: none;
-  z-index: -1;
 }
 
 .first-run-overlay.visible .first-run-modal {
   transform: scale(1);
 }
 
+/* Inner scroll container */
+.first-run-modal-scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 28px;
+}
+
 /* Scrollbar */
-.first-run-modal::-webkit-scrollbar {
+.first-run-modal-scroll::-webkit-scrollbar {
   width: 6px;
 }
 
-.first-run-modal::-webkit-scrollbar-track {
+.first-run-modal-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.first-run-modal::-webkit-scrollbar-thumb {
+.first-run-modal-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
-.first-run-modal::-webkit-scrollbar-thumb:hover {
+.first-run-modal-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 

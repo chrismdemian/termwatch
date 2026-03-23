@@ -48,8 +48,11 @@ class Controls {
       // Optimistic UI: toggle icon immediately instead of waiting for state round-trip.
       // Only apply when a video is loaded (duration > 0) to avoid permanent desync.
       if (this.videoState.duration > 0) {
+        // Use interpolated time (what the user sees) instead of stale state time
+        const predicted = this._getPredictedTime();
         this.videoState.paused = !this.videoState.paused;
-        this._lastKnownTime = this.videoState.currentTime;
+        this.videoState.currentTime = predicted;
+        this._lastKnownTime = predicted;
         this._lastUpdateTs = performance.now();
         this._updateUI();
         if (!this.videoState.paused && this.videoState.duration > 0) {
@@ -258,6 +261,12 @@ class Controls {
       cancelAnimationFrame(this._seekAnimId);
       this._seekAnimId = null;
     }
+  }
+
+  _getPredictedTime() {
+    const elapsed = (performance.now() - this._lastUpdateTs) / 1000;
+    const duration = this.videoState.duration;
+    return Math.min(this._lastKnownTime + elapsed, duration || Infinity);
   }
 
   pauseAutoHide() {
