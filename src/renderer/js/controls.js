@@ -12,7 +12,8 @@ class Controls {
     this._userSeeking = false;
     this._autoHideDelay = 3000;
     // Optimistic play/pause: tracked separately so it never permanently desyncs.
-    // Expires after 500ms if no confirming state callback arrives.
+    // Cleared only when a confirming state callback arrives (state.paused matches the prediction).
+    // Expires after 500ms if no confirming callback arrives (safety net).
     this._optimisticPaused = null; // null = not active
     this._optimisticExpiry = 0;
     this._init();
@@ -74,7 +75,7 @@ class Controls {
     document.addEventListener('mouseup', () => {
       if (this._userSeeking) {
         this._userSeeking = false;
-        if (!this.videoState.paused && this.videoState.duration > 0) {
+        if (!this._effectivePaused() && this.videoState.duration > 0) {
           this._startSeekAnimation();
         }
       }
@@ -119,7 +120,10 @@ class Controls {
       // Reset time display but keep the actual paused state so the icon stays accurate
       if (!isFinite(state.duration) || state.duration <= 0) {
         this._stopSeekAnimation();
-        this._optimisticPaused = null;
+        // Only clear optimistic if the real state confirms the prediction
+        if (this._optimisticPaused !== null && state.paused === this._optimisticPaused) {
+          this._optimisticPaused = null;
+        }
         this._lastKnownTime = 0;
         this._lastUpdateTs = performance.now();
         this.videoState.duration = 0;
@@ -139,12 +143,19 @@ class Controls {
       }
 
       this.videoState = state;
-      this._optimisticPaused = null; // real state arrived — clear optimistic
+      // Only clear optimistic when the confirming state arrives (paused matches
+      // our prediction). Stale timeupdate callbacks from before the toggle
+      // command reached the video must NOT clear it — that caused icon flicker.
+      if (this._optimisticPaused !== null && state.paused === this._optimisticPaused) {
+        this._optimisticPaused = null;
+      }
       this._lastKnownTime = state.currentTime;
       this._lastUpdateTs = performance.now();
       this._updateUI();
-      // Start or stop smooth seek animation based on play state
-      if (!state.paused && state.duration > 0) {
+      // Start or stop smooth seek animation based on effective play state
+      // (respects optimistic so we don't briefly restart animation during toggle)
+      const effectivePaused = this._effectivePaused();
+      if (!effectivePaused && state.duration > 0) {
         this._startSeekAnimation();
       } else {
         this._stopSeekAnimation();
@@ -205,12 +216,18 @@ class Controls {
     }, { passive: true });
   }
 
-  _updateUI() {
-    const { duration, volume } = this.videoState;
-    // Use optimistic paused state if still valid, otherwise use real state
-    const paused = (this._optimisticPaused !== null && performance.now() < this._optimisticExpiry)
+  /**
+   * Return the effective paused state: optimistic if still valid, otherwise real.
+   */
+  _effectivePaused() {
+    return (this._optimisticPaused !== null && performance.now() < this._optimisticExpiry)
       ? this._optimisticPaused
       : this.videoState.paused;
+  }
+
+  _updateUI() {
+    const { duration, volume } = this.videoState;
+    const paused = this._effectivePaused();
     // Use interpolation anchor for display time — it's always the most recent
     // (updated by state callbacks, seek, and play/pause)
     const displayTime = this._lastKnownTime;
@@ -273,10 +290,7 @@ class Controls {
     const INTERVAL = 66; // ~15fps — sufficient for time display updates
     let lastFrame = 0;
     const tick = (now) => {
-      const paused = (this._optimisticPaused !== null && performance.now() < this._optimisticExpiry)
-        ? this._optimisticPaused
-        : this.videoState.paused;
-      if (this._userSeeking || paused) {
+      if (this._userSeeking || this._effectivePaused()) {
         this._seekAnimId = null;
         return;
       }
@@ -317,7 +331,9 @@ class Controls {
     window.videoControlAPI.togglePlay();
     if (this.videoState.duration > 0) {
       const predicted = this._getPredictedTime();
-      this._optimisticPaused = !this.videoState.paused;
+      // Use effective paused state (accounts for active optimistic) so rapid
+      // clicks correctly toggle back and forth instead of computing the same value
+      this._optimisticPaused = !this._effectivePaused();
       this._optimisticExpiry = performance.now() + 500;
       this._lastKnownTime = predicted;
       this._lastUpdateTs = performance.now();
