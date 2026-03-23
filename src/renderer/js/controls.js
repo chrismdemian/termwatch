@@ -111,15 +111,24 @@ class Controls {
 
     // Video state updates
     window.videoControlAPI.onState((state) => {
-      // Skip updates with invalid duration (renderer-side safety net)
-      if (!isFinite(state.duration) || state.duration <= 0) return;
+      // Invalid duration signals a source transition (ad ending, page loading, etc.)
+      // Reset display to 0 instead of showing stale time from the previous source
+      if (!isFinite(state.duration) || state.duration <= 0) {
+        this._stopSeekAnimation();
+        this._lastKnownTime = 0;
+        this._lastUpdateTs = performance.now();
+        this.videoState.duration = 0;
+        this.videoState.paused = true;
+        this._updateUI();
+        return;
+      }
 
       // Detect source change (ad ↔ content): dramatic duration shift
       const prevDuration = this.videoState.duration;
       if (prevDuration > 0 && state.duration > 0) {
         const ratio = state.duration / prevDuration;
         if (ratio < 0.2 || ratio > 5) {
-          // Source changed — stop old animation so it restarts with fresh anchors
+          // Source changed — reset to new source's time
           this._stopSeekAnimation();
         }
       }
