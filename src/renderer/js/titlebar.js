@@ -86,7 +86,7 @@ class Titlebar {
         window.windowAPI.moveBy(dx, dy);
         this._dragStart = { x: sx, y: sy };
       });
-    });
+    }, { passive: true });
 
     document.addEventListener('mouseup', () => {
       this._isDragging = false;

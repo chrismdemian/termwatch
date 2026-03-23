@@ -131,7 +131,7 @@ class GlassSelect {
 
     // Sync when native select changes programmatically
     const observer = new MutationObserver(() => this._syncFromNative());
-    observer.observe(this._native, { attributes: true, childList: true, subtree: true });
+    observer.observe(this._native, { attributes: true });
 
     // Also listen for change events dispatched by JS
     this._native.addEventListener('change', () => this._syncFromNative());

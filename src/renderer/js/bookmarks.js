@@ -92,7 +92,7 @@ class Bookmarks {
       item.className = 'bookmark-item';
       item.dataset.id = bookmark.id;
       item.dataset.url = bookmark.url;
-      item.style.animationDelay = `${i * 50}ms`;
+      item.style.animationDelay = `${Math.min(i, 5) * 50}ms`;
 
       if (bookmark.favicon) {
         const img = document.createElement('img');

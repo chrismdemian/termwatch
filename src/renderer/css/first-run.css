@@ -4,8 +4,6 @@
   inset: 0;
   z-index: 600;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,6 +15,8 @@
 .first-run-overlay.visible {
   opacity: 1;
   pointer-events: auto;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Modal — frosted glass card */

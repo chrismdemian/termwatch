@@ -15,8 +15,26 @@ class Controls {
   }
 
   _init() {
-    // URL navigation
+    // Cache DOM element references used by _updateUI / _startSeekAnimation / auto-hide
     const urlInput = document.getElementById('url-input');
+    const seekBar = document.getElementById('seek-bar');
+    const volumeSlider = document.getElementById('volume-slider');
+    const controlsBar = document.getElementById('controls-bar');
+
+    this._els = {
+      urlInput,
+      seekBar,
+      volumeSlider,
+      controlsBar,
+      iconPlay: document.getElementById('icon-play'),
+      iconPause: document.getElementById('icon-pause'),
+      timeCurrent: document.getElementById('time-current'),
+      timeDuration: document.getElementById('time-duration'),
+      iconVolumeOn: document.getElementById('icon-volume-on'),
+      iconVolumeMuted: document.getElementById('icon-volume-muted'),
+    };
+
+    // URL navigation
     urlInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         let url = urlInput.value.trim();
@@ -64,7 +82,6 @@ class Controls {
     });
 
     // Seek bar
-    const seekBar = document.getElementById('seek-bar');
     seekBar.addEventListener('mousedown', () => { this._userSeeking = true; });
     document.addEventListener('mouseup', () => {
       if (this._userSeeking) {
@@ -83,7 +100,6 @@ class Controls {
     });
 
     // Volume
-    const volumeSlider = document.getElementById('volume-slider');
     volumeSlider.addEventListener('input', () => {
       const vol = parseFloat(volumeSlider.value);
       if (vol > 0) this._preMuteVolume = vol;
@@ -151,7 +167,6 @@ class Controls {
     });
 
     // Auto-hide controls - stay visible while mouse is over the bar
-    const controlsBar = document.getElementById('controls-bar');
     this._mouseOverControls = false;
 
     controlsBar.addEventListener('mouseenter', () => {
@@ -176,22 +191,28 @@ class Controls {
       this._startAutoHide();
     });
 
-    // Reveal controls when mouse approaches the bottom edge
+    // Reveal controls when mouse approaches the bottom edge (RAF-throttled)
     this._inRevealZone = false;
+    this._revealRafPending = false;
     document.addEventListener('mousemove', (e) => {
       if (this._mouseOverControls) return;
-      const threshold = 60;
-      const inZone = e.clientY >= window.innerHeight - threshold;
-      if (inZone && !this._inRevealZone) {
-        // Just entered the zone — reveal and start timer once
-        this._inRevealZone = true;
-        controlsBar.classList.remove('auto-hidden');
-        this._cancelAutoHide();
-        this._startAutoHide();
-      } else if (!inZone) {
-        this._inRevealZone = false;
-      }
-    });
+      if (this._revealRafPending) return;
+      const clientY = e.clientY;
+      this._revealRafPending = true;
+      requestAnimationFrame(() => {
+        this._revealRafPending = false;
+        const threshold = 60;
+        const inZone = clientY >= window.innerHeight - threshold;
+        if (inZone && !this._inRevealZone) {
+          this._inRevealZone = true;
+          controlsBar.classList.remove('auto-hidden');
+          this._cancelAutoHide();
+          this._startAutoHide();
+        } else if (!inZone) {
+          this._inRevealZone = false;
+        }
+      });
+    }, { passive: true });
   }
 
   _updateUI() {
@@ -201,24 +222,24 @@ class Controls {
     const displayTime = this._lastKnownTime;
 
     // Play/pause icons
-    document.getElementById('icon-play').classList.toggle('hidden', !paused);
-    document.getElementById('icon-pause').classList.toggle('hidden', paused);
+    this._els.iconPlay.classList.toggle('hidden', !paused);
+    this._els.iconPause.classList.toggle('hidden', paused);
 
     // Time
-    document.getElementById('time-current').textContent = this._formatTime(displayTime);
-    document.getElementById('time-duration').textContent = this._formatTime(duration);
+    this._els.timeCurrent.textContent = this._formatTime(displayTime);
+    this._els.timeDuration.textContent = this._formatTime(duration);
 
     // Seek bar — only set directly when paused or no animation running
     // (smooth animation handles it during playback)
     if (duration > 0 && (paused || !this._seekAnimId)) {
-      document.getElementById('seek-bar').value = (displayTime / duration) * 100;
+      this._els.seekBar.value = (displayTime / duration) * 100;
     }
 
     // Volume icon
     const isMuted = volume < 0.01 || this.videoState.muted;
-    document.getElementById('icon-volume-on').classList.toggle('hidden', isMuted);
-    document.getElementById('icon-volume-muted').classList.toggle('hidden', !isMuted);
-    document.getElementById('volume-slider').value = volume;
+    this._els.iconVolumeOn.classList.toggle('hidden', isMuted);
+    this._els.iconVolumeMuted.classList.toggle('hidden', !isMuted);
+    this._els.volumeSlider.value = volume;
   }
 
   _formatTime(seconds) {
@@ -229,7 +250,7 @@ class Controls {
     if (this._autoHideDelay === 0) return;
     this._cancelAutoHide();
     this._autoHideTimeout = setTimeout(() => {
-      document.getElementById('controls-bar').classList.add('auto-hidden');
+      this._els.controlsBar.classList.add('auto-hidden');
     }, this._autoHideDelay);
   }
 
@@ -237,7 +258,7 @@ class Controls {
     this._autoHideDelay = ms;
     if (ms === 0) {
       this._cancelAutoHide();
-      document.getElementById('controls-bar').classList.remove('auto-hidden');
+      this._els.controlsBar.classList.remove('auto-hidden');
     }
   }
 
@@ -254,17 +275,22 @@ class Controls {
       cancelAnimationFrame(this._seekAnimId);
       this._seekAnimId = null;
     }
-    const tick = () => {
+    const INTERVAL = 66; // ~15fps — sufficient for time display updates
+    let lastFrame = 0;
+    const tick = (now) => {
       if (this._userSeeking || this.videoState.paused) {
         this._seekAnimId = null;
         return;
       }
-      const elapsed = (performance.now() - this._lastUpdateTs) / 1000;
-      const duration = this.videoState.duration;
-      const predicted = Math.min(this._lastKnownTime + elapsed, duration);
-      if (duration > 0) {
-        document.getElementById('seek-bar').value = (predicted / duration) * 100;
-        document.getElementById('time-current').textContent = this._formatTime(predicted);
+      if (now - lastFrame >= INTERVAL) {
+        lastFrame = now;
+        const elapsed = (performance.now() - this._lastUpdateTs) / 1000;
+        const duration = this.videoState.duration;
+        const predicted = Math.min(this._lastKnownTime + elapsed, duration);
+        if (duration > 0) {
+          this._els.seekBar.value = (predicted / duration) * 100;
+          this._els.timeCurrent.textContent = this._formatTime(predicted);
+        }
       }
       this._seekAnimId = requestAnimationFrame(tick);
     };
@@ -286,7 +312,7 @@ class Controls {
 
   pauseAutoHide() {
     this._cancelAutoHide();
-    document.getElementById('controls-bar').classList.remove('auto-hidden');
+    this._els.controlsBar.classList.remove('auto-hidden');
   }
 
   resumeAutoHide() {

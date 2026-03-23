@@ -93,7 +93,6 @@ class LayoutManager {
     panel.dataset.panelId = panelId;
     panel.style.gridRow = `${panelDef.r + 1} / span ${panelDef.rs}`;
     panel.style.gridColumn = `${panelDef.c + 1} / span ${panelDef.cs}`;
-    panel.style.background = `rgba(12, 12, 20, ${this.terminalManager._opacity})`;
 
     // Terminal container
     const termContainer = document.createElement('div');

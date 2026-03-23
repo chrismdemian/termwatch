@@ -275,9 +275,7 @@ class TerminalManager {
 
   setOpacity(opacity) {
     this._opacity = opacity;
-    document.querySelectorAll('.terminal-panel').forEach((panel) => {
-      panel.style.background = `rgba(12, 12, 20, ${opacity})`;
-    });
+    document.documentElement.style.setProperty('--panel-opacity', opacity);
   }
 
   _showExitOverlay(panelId, exitCode) {

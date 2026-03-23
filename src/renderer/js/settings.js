@@ -2,6 +2,14 @@ const { ipcRenderer } = require('electron');
 const Pickr = require('@simonwep/pickr');
 const { hexToRgba, normalizeHex } = require('./settings-utils');
 
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
+
 class Settings {
   constructor({ layoutManager, terminalManager, controls }) {
     this.layoutManager = layoutManager;
@@ -140,23 +148,25 @@ class Settings {
     // Opacity
     const opacitySlider = document.getElementById('setting-opacity');
     const opacityValueLabel = document.getElementById('setting-opacity-value');
+    const debouncedSaveOpacity = debounce((val) => window.storeAPI.set('opacity', val), 200);
     opacitySlider.addEventListener('input', () => {
       const val = parseFloat(opacitySlider.value);
       this._values.opacity = val;
       this._applyOpacity(val);
       opacityValueLabel.textContent = Math.round(val * 100) + '%';
-      window.storeAPI.set('opacity', val);
+      debouncedSaveOpacity(val);
     });
 
     // Shadow intensity
     const shadowSlider = document.getElementById('setting-shadow-intensity');
     const shadowValueLabel = document.getElementById('setting-shadow-intensity-value');
+    const debouncedSaveShadow = debounce((val) => window.storeAPI.set('shadowIntensity', val), 200);
     shadowSlider.addEventListener('input', () => {
       const val = parseFloat(shadowSlider.value);
       this._values.shadowIntensity = val;
       this._applyShadowIntensity(val);
       shadowValueLabel.textContent = Math.round(val * 100) + '%';
-      window.storeAPI.set('shadowIntensity', val);
+      debouncedSaveShadow(val);
     });
 
     // Font size

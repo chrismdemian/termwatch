@@ -7,7 +7,7 @@ const SHORTCUT_DATA = [
     shortcuts: [
       { keys: ['?'], action: 'Show keyboard shortcuts' },
       { keys: ['Ctrl', 'Shift', ','], action: 'Open settings' },
-      { keys: ['Escape'], action: 'Close modal / exit mode' },
+      { keys: ['Escape'], action: 'Toggle video mode / close modal' },
       { keys: ['F11'], action: 'Toggle fullscreen' },
     ],
   },

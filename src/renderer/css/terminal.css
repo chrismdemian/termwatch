@@ -1,6 +1,6 @@
 /* Terminal Panel — subtle glass so video shows through */
 .terminal-panel {
-  background: var(--bg-panel);
+  background: rgba(12, 12, 20, var(--panel-opacity, 0.3));
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0;
   overflow: hidden;
@@ -90,8 +90,6 @@
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
   color: var(--text-secondary);
@@ -105,7 +103,7 @@
 }
 
 .panel-header-btn svg {
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
+  filter: none;
 }
 
 .panel-header-btn:hover {

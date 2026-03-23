@@ -1,7 +1,6 @@
 :root {
   /* Glass surfaces — dramatic opacity, not subtle */
   --bg-deep: rgba(10, 10, 20, 0.75);
-  --bg-panel: rgba(12, 12, 20, 0.3);
   --bg-controls: rgba(255, 255, 255, 0.14);
   --surface: rgba(255, 255, 255, 0.12);
   --surface-hover: rgba(255, 255, 255, 0.22);
@@ -18,8 +17,8 @@
   --danger: #e06060;
 
   /* Glass effect tokens — strong, visible */
-  --glass-blur: blur(20px) saturate(180%);
-  --glass-blur-strong: blur(30px) saturate(200%);
+  --glass-blur: blur(14px) saturate(150%);
+  --glass-blur-strong: blur(20px) saturate(180%);
   --glass-bg: rgba(255, 255, 255, 0.14);
   --glass-bg-hover: rgba(255, 255, 255, 0.22);
   --glass-border: 1px solid rgba(255, 255, 255, 0.3);
@@ -106,7 +105,7 @@ html, body {
 }
 
 .titlebar-btn svg {
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15));
+  filter: none;
 }
 
 .titlebar-btn:hover {

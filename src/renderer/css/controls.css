@@ -49,14 +49,12 @@
   transition: background var(--duration-fast) ease-out,
               color var(--duration-fast) ease-out,
               border-color var(--duration-fast) ease-out,
-              box-shadow var(--duration-fast) ease-out,
               transform var(--duration-fast) ease-out;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* Icon glow */
 .ctrl-btn svg {
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
   transition: filter var(--duration-fast) ease-out;
 }
 
@@ -69,7 +67,7 @@
 }
 
 .ctrl-btn:hover svg {
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
 }
 
 .ctrl-btn:active {
@@ -90,8 +88,6 @@
 .btn {
   position: relative;
   background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   color: var(--text-primary);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-top: 1px solid rgba(255, 255, 255, 0.45);

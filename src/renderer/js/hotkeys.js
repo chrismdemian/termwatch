@@ -44,6 +44,8 @@ class Hotkeys {
           this._toggleTheaterMode();
         } else if (this.videoMode) {
           this._toggleVideoMode();
+        } else if (!document.activeElement?.closest('.terminal-panel')) {
+          this._toggleVideoMode();
         }
         return;
       }
