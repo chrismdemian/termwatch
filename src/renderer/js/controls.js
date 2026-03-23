@@ -132,13 +132,13 @@ class Controls {
         return;
       }
 
-      // Detect source change (ad ↔ content): significant duration shift.
-      // Thresholds catch ad↔ad (30s→60s) and ad↔content (30s→120s) transitions.
+      // Detect source change (ad ↔ content): dramatic duration shift
       const prevDuration = this.videoState.duration;
-      const sourceChanged = prevDuration > 0 && state.duration > 0
-        && (state.duration / prevDuration < 0.5 || state.duration / prevDuration > 2);
-      if (sourceChanged) {
-        this._stopSeekAnimation();
+      if (prevDuration > 0 && state.duration > 0) {
+        const ratio = state.duration / prevDuration;
+        if (ratio < 0.2 || ratio > 5) {
+          this._stopSeekAnimation();
+        }
       }
 
       this.videoState = state;
@@ -148,15 +148,15 @@ class Controls {
       if (this._optimisticPaused !== null && state.paused === this._optimisticPaused) {
         this._optimisticPaused = null;
       }
-      // Clamp time to duration — during source transitions, currentTime from
-      // the old source can exceed the new source's duration, pinning the seek
-      // bar at 100%.  On source change, reset to 0 since we're starting fresh.
-      if (sourceChanged) {
+      // During source transitions, currentTime from the old source can exceed
+      // the new source's duration. If it's significantly past the end, reset
+      // to 0 (new source starting). Otherwise clamp to duration.
+      if (state.duration > 0 && state.currentTime > state.duration + 2) {
         this._lastKnownTime = 0;
+      } else if (state.duration > 0) {
+        this._lastKnownTime = Math.min(state.currentTime, state.duration);
       } else {
-        this._lastKnownTime = (state.duration > 0)
-          ? Math.min(state.currentTime, state.duration)
-          : state.currentTime;
+        this._lastKnownTime = state.currentTime;
       }
       this._lastUpdateTs = performance.now();
       this._updateUI();
@@ -339,20 +339,20 @@ class Controls {
 
   togglePlay() {
     window.videoControlAPI.togglePlay();
+    // Always update icon optimistically — even during source transitions
+    // (duration=0), the icon must respond to clicks immediately.
+    this._optimisticPaused = !this._effectivePaused();
+    this._optimisticExpiry = performance.now() + 500;
+    // Only update seek position when we have a valid duration
     if (this.videoState.duration > 0) {
-      const predicted = this._getPredictedTime();
-      // Use effective paused state (accounts for active optimistic) so rapid
-      // clicks correctly toggle back and forth instead of computing the same value
-      this._optimisticPaused = !this._effectivePaused();
-      this._optimisticExpiry = performance.now() + 500;
-      this._lastKnownTime = predicted;
+      this._lastKnownTime = this._getPredictedTime();
       this._lastUpdateTs = performance.now();
-      this._updateUI();
-      if (!this._optimisticPaused && this.videoState.duration > 0) {
-        this._startSeekAnimation();
-      } else {
-        this._stopSeekAnimation();
-      }
+    }
+    this._updateUI();
+    if (!this._optimisticPaused && this.videoState.duration > 0) {
+      this._startSeekAnimation();
+    } else {
+      this._stopSeekAnimation();
     }
   }
 
