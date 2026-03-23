@@ -338,6 +338,12 @@ class Controls {
     this._startAutoHide();
   }
 
+  revealAndAutoHide() {
+    this._els.controlsBar.classList.remove('auto-hidden');
+    this._cancelAutoHide();
+    this._startAutoHide();
+  }
+
 }
 
 module.exports = Controls;
