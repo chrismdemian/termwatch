@@ -1,42 +1,37 @@
 :root {
-  /* Glass surfaces */
-  --bg-deep: rgba(10, 10, 20, 0.82);
-  --bg-panel: rgba(255, 255, 255, 0.04);
-  --bg-controls: rgba(255, 255, 255, 0.08);
-  --surface: rgba(255, 255, 255, 0.07);
-  --surface-hover: rgba(255, 255, 255, 0.13);
-  --surface-active: rgba(255, 255, 255, 0.18);
-  --text-primary: #f0eeeb;
-  --text-secondary: #9a98a6;
+  /* Glass surfaces — dramatic opacity, not subtle */
+  --bg-deep: rgba(10, 10, 20, 0.75);
+  --bg-panel: rgba(12, 12, 20, 0.3);
+  --bg-controls: rgba(255, 255, 255, 0.14);
+  --surface: rgba(255, 255, 255, 0.12);
+  --surface-hover: rgba(255, 255, 255, 0.22);
+  --surface-active: rgba(255, 255, 255, 0.28);
+  --text-primary: #f2f0ed;
+  --text-secondary: #a0a0b0;
   --text-muted: #6e6c7a;
   --accent: #e09858;
   --accent-hover: #eba76e;
-  --accent-glow: rgba(224, 152, 88, 0.18);
-  --border: rgba(255, 255, 255, 0.09);
-  --border-focus: rgba(224, 152, 88, 0.35);
+  --accent-glow: rgba(224, 152, 88, 0.22);
+  --border: rgba(255, 255, 255, 0.25);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(224, 152, 88, 0.5);
   --danger: #e06060;
 
-  /* Glass effect tokens */
-  --glass-blur: blur(16px) saturate(180%);
-  --glass-blur-strong: blur(24px) saturate(200%);
-  --glass-shine: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.0) 50%,
-    rgba(255, 255, 255, 0.04) 100%
-  );
-  --glass-edge-light: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.25),
-    transparent
-  );
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  --glass-shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.15);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  --glass-radius: 12px;
-  --glass-radius-lg: 20px;
-  --glass-radius-sm: 8px;
+  /* Glass effect tokens — strong, visible */
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-blur-strong: blur(30px) saturate(200%);
+  --glass-bg: rgba(255, 255, 255, 0.14);
+  --glass-bg-hover: rgba(255, 255, 255, 0.22);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+  --glass-border-top: 1px solid rgba(255, 255, 255, 0.45);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --glass-shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  --glass-inset-strong: inset 0 2px 12px rgba(255, 255, 255, 0.15);
+  --glass-radius: 14px;
+  --glass-radius-lg: 22px;
+  --glass-radius-sm: 10px;
+  --glass-radius-pill: 9999px;
 
   --duration-fast: 120ms;
   --duration-normal: 200ms;
@@ -65,10 +60,10 @@ html, body {
   display: none !important;
 }
 
-/* Title Bar */
+/* Title Bar — frosted glass strip */
 .titlebar {
   height: 32px;
-  background: rgba(10, 10, 20, 0.6);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   display: flex;
@@ -77,20 +72,9 @@ html, body {
   padding: 0 12px;
   position: relative;
   z-index: 100;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   cursor: default;
-}
-
-/* Subtle top edge shine on titlebar */
-.titlebar::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 15%;
-  right: 15%;
-  height: 1px;
-  background: var(--glass-edge-light);
-  pointer-events: none;
 }
 
 .titlebar-title {
@@ -98,7 +82,7 @@ html, body {
   color: var(--text-secondary);
   letter-spacing: 0.5px;
   font-weight: 400;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .titlebar-controls {
@@ -121,8 +105,12 @@ html, body {
   border-radius: 0;
 }
 
+.titlebar-btn svg {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15));
+}
+
 .titlebar-btn:hover {
-  background: var(--surface-hover);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
 }
 
@@ -159,35 +147,38 @@ html, body {
   pointer-events: none;
 }
 
-/* Video Mode Indicator */
+/* Video Mode Indicator — floating glass toast */
 .video-mode-indicator {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: var(--glass-blur-strong);
   -webkit-backdrop-filter: var(--glass-blur-strong);
   color: var(--text-primary);
-  padding: 18px 28px;
-  border-radius: var(--glass-radius);
+  padding: 18px 30px;
+  border-radius: var(--glass-radius-pill);
   font-size: 14px;
   z-index: 1000;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: var(--glass-shadow),
-              var(--glass-inset);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+              var(--glass-inset),
+              var(--glass-inset-strong);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   animation: fadeInOut 3s ease-out forwards;
 }
 
 .video-mode-indicator kbd {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   padding: 2px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
   font-size: 12px;
-  box-shadow: var(--glass-inset);
+  box-shadow: var(--glass-inset),
+              0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes fadeInOut {

@@ -1,12 +1,12 @@
-/* Controls Bar */
+/* Controls Bar — floating frosted glass bar */
 .controls-bar {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 48px;
-  background: rgba(255, 255, 255, 0.06);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   padding: 0 12px;
@@ -16,20 +16,9 @@
   z-index: 100;
   transition: opacity var(--duration-normal) ease-out,
               transform var(--duration-slow) var(--easing);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1),
-              inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-/* Top edge shine */
-.controls-bar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: var(--glass-edge-light);
-  pointer-events: none;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              inset 0 2px 12px rgba(255, 255, 255, 0.08);
 }
 
 .controls-bar.auto-hidden {
@@ -43,32 +32,49 @@
   pointer-events: none;
 }
 
-/* Buttons */
+/* Glass pill buttons */
 .ctrl-btn {
+  position: relative;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
-  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--glass-radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out,
+              transform var(--duration-fast) ease-out;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Icon glow */
+.ctrl-btn svg {
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
+  transition: filter var(--duration-fast) ease-out;
 }
 
 .ctrl-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: var(--glass-inset);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ctrl-btn:hover svg {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
 }
 
 .ctrl-btn:active {
-  background: rgba(255, 255, 255, 0.18);
-  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(0.93);
   transition-duration: 60ms;
 }
 
@@ -76,42 +82,67 @@
   color: var(--accent);
 }
 
+.ctrl-btn.active svg {
+  filter: drop-shadow(0 0 6px rgba(224, 152, 88, 0.4));
+}
+
+/* Generic .btn — glass pill */
 .btn {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  position: relative;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: var(--glass-radius-sm);
-  padding: 6px 14px;
+  padding: 6px 16px;
   font-size: 12px;
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
-  box-shadow: var(--glass-shadow-subtle),
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out,
+              transform var(--duration-fast) ease-out;
+  box-shadow: var(--glass-shadow),
               var(--glass-inset);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Glass shine overlay */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.0) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-1px);
-  box-shadow: var(--glass-shadow),
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
               var(--glass-inset);
 }
 
 .btn:active {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(0) scale(0.98);
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(0) scale(0.97);
   transition-duration: 60ms;
 }
 
-/* URL Input */
+/* URL Input — glass input */
 .url-input {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--glass-radius-sm);
   padding: 6px 14px;
   font-size: 12px;
   flex: 1;
@@ -122,31 +153,33 @@
               border-color var(--duration-normal) ease-out,
               box-shadow var(--duration-normal) ease-out;
   -webkit-app-region: no-drag;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .url-input:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .url-input:focus {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.14);
   border-color: var(--border-focus);
   outline: none;
   box-shadow: 0 0 0 3px var(--accent-glow),
-              inset 0 1px 3px rgba(0, 0, 0, 0.1);
+              inset 0 1px 3px rgba(0, 0, 0, 0.1),
+              0 0 20px rgba(224, 152, 88, 0.1);
 }
 
 .url-input::placeholder {
   color: var(--text-muted);
 }
 
-/* Separator */
+/* Separator — glass edge */
 .ctrl-separator {
   width: 1px;
   height: 24px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
 }
 
@@ -159,17 +192,18 @@
   flex-shrink: 0;
   min-width: 36px;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
-/* Sliders */
+/* Sliders — glass track + glowing thumb */
 input[type="range"] {
   -webkit-appearance: none;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
   outline: none;
   cursor: pointer;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -177,24 +211,28 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   background: var(--accent);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 10px var(--accent-glow),
-              0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 12px rgba(224, 152, 88, 0.4),
+              0 2px 6px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: transform var(--duration-fast) ease-out,
               box-shadow var(--duration-fast) ease-out;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 0 16px rgba(224, 152, 88, 0.3),
-              0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 20px rgba(224, 152, 88, 0.5),
+              0 2px 8px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 input[type="range"]:active::-webkit-slider-thumb {
   transform: scale(1.15);
-  box-shadow: 0 0 20px rgba(224, 152, 88, 0.4),
-              0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 24px rgba(224, 152, 88, 0.6),
+              0 2px 8px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .seek-bar {
@@ -212,14 +250,14 @@ input[type="range"]:active::-webkit-slider-thumb {
   color: var(--text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Layout Select */
+/* Layout Select — glass dropdown */
 .layout-select {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--glass-radius-sm);
   padding: 4px 8px;
   font-size: 12px;
@@ -227,17 +265,21 @@ input[type="range"]:active::-webkit-slider-thumb {
   cursor: pointer;
   -webkit-app-region: no-drag;
   outline: none;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .layout-select:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .layout-select:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  box-shadow: 0 0 0 3px var(--accent-glow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .layout-select option {
@@ -281,12 +323,12 @@ input[type="range"]:active::-webkit-slider-thumb {
 .ctrl-btn.has-update::after {
   content: '';
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 3px;
+  right: 3px;
   width: 8px;
   height: 8px;
   background: var(--accent);
   border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.3);
-  box-shadow: 0 0 6px var(--accent-glow);
+  box-shadow: 0 0 8px rgba(224, 152, 88, 0.5);
 }

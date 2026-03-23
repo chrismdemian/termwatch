@@ -1,11 +1,11 @@
-/* Settings Modal Overlay */
+/* Settings Modal Overlay — dim + blur background */
 .settings-overlay {
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,13 +19,14 @@
   pointer-events: auto;
 }
 
-/* Modal */
+/* Modal — frosted glass card */
 .settings-modal {
   position: relative;
-  background: rgba(20, 20, 35, 0.75);
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: var(--glass-blur-strong);
   -webkit-backdrop-filter: var(--glass-blur-strong);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--glass-radius-lg);
   width: 420px;
   max-height: 80vh;
@@ -33,22 +34,28 @@
   padding: 24px;
   transform: scale(0.96);
   transition: transform var(--duration-slow) var(--easing);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4),
-              var(--glass-inset);
+  box-shadow: var(--glass-shadow-lg),
+              var(--glass-inset),
+              var(--glass-inset-strong);
   isolation: isolate;
 }
 
-/* Top edge shine */
+/* Glass shine overlay on modal */
 .settings-modal::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: var(--glass-edge-light);
+  left: 0;
+  right: 0;
+  height: 60%;
+  border-radius: var(--glass-radius-lg) var(--glass-radius-lg) 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 
 .settings-overlay.visible .settings-modal {
@@ -65,12 +72,12 @@
 }
 
 .settings-modal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 .settings-modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Header */
@@ -85,7 +92,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .settings-close-btn {
@@ -94,18 +101,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out;
+  box-shadow: var(--glass-inset);
+}
+
+.settings-close-btn svg {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15));
 }
 
 .settings-close-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Section */
@@ -123,7 +137,7 @@
   letter-spacing: 1px;
   color: var(--text-muted);
   margin-bottom: 12px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Row */
@@ -145,12 +159,12 @@
   flex-shrink: 0;
 }
 
-/* Number Input */
+/* Number Input — glass */
 .settings-number {
   width: 72px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   padding: 4px 8px;
   font-size: 13px;
@@ -158,17 +172,20 @@
   text-align: center;
   outline: none;
   -webkit-app-region: no-drag;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
 }
 
 .settings-number:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .settings-number:focus {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--accent-glow);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .settings-number::-webkit-inner-spin-button,
@@ -177,21 +194,22 @@
   margin: 0;
 }
 
-/* Stepper (number input with +/- buttons) */
+/* Stepper — glass frame */
 .settings-stepper {
   display: flex;
   align-items: stretch;
   height: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--glass-radius-sm);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: var(--glass-inset);
 }
 
 .settings-stepper .settings-number {
   border: none;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 0;
   width: 48px;
   height: auto;
@@ -214,23 +232,24 @@
   cursor: pointer;
   font-size: 16px;
   flex-shrink: 0;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out;
 }
 
 .settings-stepper-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
 }
 
 .settings-stepper-btn:active {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.22);
 }
 
-/* Select */
+/* Select — glass */
 .settings-select {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   padding: 4px 8px;
   font-size: 13px;
@@ -238,12 +257,15 @@
   cursor: pointer;
   outline: none;
   -webkit-app-region: no-drag;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .settings-select:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .settings-select:focus {
@@ -285,39 +307,44 @@
 .settings-color-trigger {
   width: 28px;
   height: 28px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   flex-shrink: 0;
   cursor: pointer;
   padding: 0;
-  transition: all var(--duration-fast) ease-out;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: border-color var(--duration-fast) ease-out,
+              transform var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .settings-color-trigger:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: scale(1.08);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-/* Pickr dark theme overrides */
+/* Pickr dark theme overrides — glass */
 .pcr-app {
-  background: rgba(20, 20, 35, 0.9) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 18px !important;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+              inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 .pcr-app .pcr-interaction {
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 .pcr-app .pcr-interaction input {
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   color: var(--text-primary) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 8px !important;
   font-family: 'JetBrains Mono', 'Cascadia Code', monospace !important;
 }
@@ -329,8 +356,8 @@
 
 .pcr-app .pcr-interaction .pcr-result {
   color: var(--text-primary) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 8px !important;
   font-family: 'JetBrains Mono', 'Cascadia Code', monospace !important;
 }
@@ -339,12 +366,12 @@
   background: var(--accent) !important;
   color: white !important;
   border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(224, 152, 88, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(224, 152, 88, 0.35) !important;
 }
 
 .pcr-app .pcr-interaction .pcr-cancel,
 .pcr-app .pcr-interaction .pcr-clear {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   color: var(--text-secondary) !important;
   border-radius: 8px !important;
 }
@@ -359,29 +386,32 @@
 
 .settings-color-hex {
   width: 80px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   padding: 4px 8px;
   font-size: 12px;
   font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
   outline: none;
   -webkit-app-region: no-drag;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
 }
 
 .settings-color-hex:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .settings-color-hex:focus {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--accent-glow);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.14);
 }
 
-/* Toggle Switch */
+/* Toggle Switch — glass track */
 .settings-toggle {
   position: relative;
   width: 40px;
@@ -399,11 +429,15 @@
 .settings-toggle-track {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 11px;
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .settings-toggle-track::after {
@@ -413,32 +447,37 @@
   left: 2px;
   width: 16px;
   height: 16px;
-  background: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 50%;
   transition: transform var(--duration-fast) var(--easing),
               background var(--duration-fast) ease-out,
               box-shadow var(--duration-fast) ease-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .settings-toggle input:checked + .settings-toggle-track {
   background: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(224, 152, 88, 0.25);
+  box-shadow: 0 0 16px rgba(224, 152, 88, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .settings-toggle input:checked + .settings-toggle-track::after {
   transform: translateX(18px);
   background: white;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-/* Segmented Control */
+/* Segmented Control — glass */
 .settings-segmented {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   overflow: hidden;
+  box-shadow: var(--glass-inset);
 }
 
 .settings-segmented-btn {
@@ -449,65 +488,78 @@
   background: none;
   border: none;
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
 }
 
 .settings-segmented-btn:not(:last-child) {
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .settings-segmented-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .settings-segmented-btn.active {
   background: var(--accent);
   color: white;
-  box-shadow: 0 2px 8px rgba(224, 152, 88, 0.25);
+  box-shadow: 0 2px 10px rgba(224, 152, 88, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Action Button */
+/* Action Button — glass pill */
 .settings-action-btn {
+  position: relative;
   padding: 5px 14px;
   font-size: 12px;
   font-family: 'Inter', system-ui, sans-serif;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
-  box-shadow: var(--glass-inset);
-}
-
-.settings-action-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text-primary);
-  border-color: rgba(224, 152, 88, 0.3);
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out,
+              transform var(--duration-fast) ease-out;
   box-shadow: var(--glass-inset),
               0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.settings-action-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: var(--glass-inset),
+              0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
 .settings-action-btn:active {
-  background: rgba(255, 255, 255, 0.16);
-  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.24);
+  transform: translateY(0) scale(0.97);
+  transition-duration: 60ms;
 }
 
 /* Danger Button */
 .settings-danger-btn {
   color: #e86060;
-  border-color: rgba(232, 96, 96, 0.2);
+  border-color: rgba(232, 96, 96, 0.3);
 }
 
 .settings-danger-btn:hover {
-  background: rgba(232, 96, 96, 0.12);
+  background: rgba(232, 96, 96, 0.15);
   color: #ff7070;
-  border-color: rgba(232, 96, 96, 0.4);
+  border-color: rgba(232, 96, 96, 0.5);
+  box-shadow: inset 0 1px 0 rgba(232, 96, 96, 0.15),
+              0 4px 16px rgba(232, 96, 96, 0.15);
 }
 
 .settings-danger-btn:active {
-  background: rgba(232, 96, 96, 0.18);
+  background: rgba(232, 96, 96, 0.22);
 }
 
 /* Hint Text */
@@ -522,13 +574,13 @@
 .settings-version {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
   font-size: 11px;
   color: var(--text-muted);
 }
 
-/* Update Banner */
+/* Update Banner — accent glass */
 .settings-update-banner {
   display: none;
   align-items: center;
@@ -536,12 +588,13 @@
   gap: 10px;
   padding: 10px 14px;
   margin-bottom: 20px;
-  background: rgba(224, 152, 88, 0.08);
-  border: 1px solid rgba(224, 152, 88, 0.2);
+  background: rgba(224, 152, 88, 0.1);
+  border: 1px solid rgba(224, 152, 88, 0.3);
   border-radius: var(--glass-radius);
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(224, 152, 88, 0.1);
+  box-shadow: inset 0 1px 0 rgba(224, 152, 88, 0.15),
+              0 4px 16px rgba(224, 152, 88, 0.1);
 }
 
 .settings-update-banner.visible {
@@ -551,7 +604,7 @@
 .settings-update-banner .update-label {
   font-size: 13px;
   color: var(--accent);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .settings-update-banner .update-btn {
@@ -563,13 +616,18 @@
   border: none;
   border-radius: var(--glass-radius-sm);
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
-  box-shadow: 0 2px 8px rgba(224, 152, 88, 0.25);
+  transition: opacity var(--duration-fast) ease-out,
+              transform var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+  box-shadow: 0 4px 12px rgba(224, 152, 88, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .settings-update-banner .update-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(224, 152, 88, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .settings-update-banner .update-btn:disabled {
@@ -608,5 +666,5 @@
   border-radius: 0 0 var(--glass-radius) var(--glass-radius);
   width: calc(var(--progress, 0) * 1%);
   transition: width 0.3s ease-out;
-  box-shadow: 0 0 8px rgba(224, 152, 88, 0.3);
+  box-shadow: 0 0 10px rgba(224, 152, 88, 0.4);
 }

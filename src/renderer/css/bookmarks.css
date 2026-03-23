@@ -1,12 +1,12 @@
-/* Bookmarks Bar */
+/* Bookmarks Bar — frosted glass strip */
 .bookmarks-bar {
   position: absolute;
   bottom: 48px;
   left: 0;
   right: 0;
   height: 44px;
-  background: rgba(255, 255, 255, 0.06);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   padding: 0 12px;
@@ -16,7 +16,8 @@
   z-index: 99;
   animation: slideUp var(--duration-normal) var(--easing);
   transition: opacity var(--duration-normal) ease-out;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+              0 -4px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* Hide bookmarks bar when controls auto-hide */
@@ -49,13 +50,14 @@
   display: none;
 }
 
-/* Individual Bookmark */
+/* Individual Bookmark — glass orb */
 .bookmark-item {
+  position: relative;
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,9 +69,25 @@
               border-color var(--duration-fast) ease-out,
               box-shadow var(--duration-fast) ease-out;
   animation: bookmarkPop var(--duration-normal) var(--easing);
-  position: relative;
-  box-shadow: var(--glass-inset),
-              0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Glass shine on bookmark orb */
+.bookmark-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
 }
 
 @keyframes bookmarkPop {
@@ -87,15 +105,15 @@
 }
 
 .bookmark-item:hover {
-  transform: scale(1.12);
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: var(--glass-inset),
-              0 4px 16px rgba(0, 0, 0, 0.25);
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4),
+              0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .bookmark-item:active {
-  transform: scale(1.04);
+  transform: scale(1.05);
   transition-duration: 60ms;
 }
 
@@ -110,22 +128,22 @@
   font-weight: 600;
   color: var(--accent);
   text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Tooltip */
+/* Tooltip — glass floating label */
 .bookmark-item::after {
   content: attr(data-url);
   position: absolute;
   bottom: 110%;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(10, 10, 20, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   color: var(--text-primary);
-  padding: 5px 10px;
-  border-radius: 8px;
+  padding: 5px 12px;
+  border-radius: var(--glass-radius-sm);
   font-size: 11px;
   white-space: nowrap;
   max-width: 250px;
@@ -134,8 +152,10 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-fast) ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--glass-shadow-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: var(--glass-shadow),
+              var(--glass-inset);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   z-index: 200;
 }
 
@@ -143,28 +163,32 @@
   opacity: 1;
 }
 
-/* Add Bookmark Button */
+/* Add Bookmark Button — dashed glass */
 .bookmark-add-btn {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: none;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px dashed rgba(255, 255, 255, 0.25);
   color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
 }
 
 .bookmark-add-btn:hover {
   border-color: var(--accent);
   border-style: solid;
   color: var(--accent);
-  background: rgba(224, 152, 88, 0.1);
-  box-shadow: 0 0 12px rgba(224, 152, 88, 0.15);
+  background: rgba(224, 152, 88, 0.12);
+  box-shadow: 0 0 16px rgba(224, 152, 88, 0.2),
+              inset 0 1px 0 rgba(224, 152, 88, 0.2);
 }
 
 /* Bookmark removal animation */

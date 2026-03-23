@@ -3,9 +3,9 @@
   position: fixed;
   inset: 0;
   z-index: 600;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,13 +19,14 @@
   pointer-events: auto;
 }
 
-/* Modal */
+/* Modal — frosted glass card */
 .first-run-modal {
   position: relative;
-  background: rgba(20, 20, 35, 0.78);
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: var(--glass-blur-strong);
   -webkit-backdrop-filter: var(--glass-blur-strong);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--glass-radius-lg);
   width: 520px;
   max-height: 80vh;
@@ -33,22 +34,28 @@
   padding: 28px;
   transform: scale(0.96);
   transition: transform var(--duration-slow) var(--easing);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45),
-              var(--glass-inset);
+  box-shadow: var(--glass-shadow-lg),
+              var(--glass-inset),
+              var(--glass-inset-strong);
   isolation: isolate;
 }
 
-/* Top edge shine */
+/* Glass shine overlay */
 .first-run-modal::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: var(--glass-edge-light);
+  left: 0;
+  right: 0;
+  height: 60%;
+  border-radius: var(--glass-radius-lg) var(--glass-radius-lg) 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 
 .first-run-overlay.visible .first-run-modal {
@@ -65,12 +72,12 @@
 }
 
 .first-run-modal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 .first-run-modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Header */
@@ -83,7 +90,7 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .first-run-subtitle {
@@ -92,7 +99,7 @@
   margin-top: 4px;
 }
 
-/* Step Indicator */
+/* Step Indicator — glass dots */
 .first-run-steps {
   display: flex;
   align-items: center;
@@ -110,24 +117,29 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all var(--duration-fast) ease-out;
-  box-shadow: var(--glass-inset);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+  box-shadow: var(--glass-inset),
+              0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .first-run-step.active {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
-  box-shadow: 0 0 14px rgba(224, 152, 88, 0.3);
+  box-shadow: 0 0 18px rgba(224, 152, 88, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .first-run-step-line {
   width: 40px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Heading */
@@ -138,10 +150,10 @@
   margin-bottom: 12px;
 }
 
-/* Legal Text */
+/* Legal Text — inset glass panel */
 .first-run-legal-text {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--glass-radius);
   padding: 16px;
   max-height: 280px;
@@ -151,7 +163,8 @@
   color: var(--text-secondary);
   white-space: pre-wrap;
   margin-bottom: 20px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .first-run-legal-text::-webkit-scrollbar {
@@ -163,7 +176,7 @@
 }
 
 .first-run-legal-text::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
@@ -175,44 +188,51 @@
 }
 
 .first-run-btn {
+  position: relative;
   padding: 8px 20px;
   font-size: 13px;
   font-family: 'Inter', system-ui, sans-serif;
   border-radius: var(--glass-radius-sm);
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out,
+              transform var(--duration-fast) ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .first-run-btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
-  box-shadow: var(--glass-inset);
+  box-shadow: var(--glass-inset),
+              0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .first-run-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .first-run-btn-primary {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
-  box-shadow: 0 4px 16px rgba(224, 152, 88, 0.25),
-              var(--glass-inset);
+  box-shadow: 0 4px 18px rgba(224, 152, 88, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .first-run-btn-primary:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(224, 152, 88, 0.3),
-              var(--glass-inset);
+  box-shadow: 0 6px 24px rgba(224, 152, 88, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .first-run-btn-primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
   transition-duration: 60ms;
 }

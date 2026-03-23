@@ -8,6 +8,9 @@ const ipcHandlers = require('./ipc-handlers');
 const ptyManager = require('./pty-manager');
 const updater = require('./updater');
 
+// Set proper app name (package.json "name" is lowercase per npm rules)
+app.setName('TermWatch');
+
 // Force dark theme for native Chromium UI (color picker, input spinners, etc.)
 nativeTheme.themeSource = 'dark';
 

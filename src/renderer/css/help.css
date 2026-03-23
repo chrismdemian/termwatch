@@ -3,9 +3,9 @@
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,13 +19,14 @@
   pointer-events: auto;
 }
 
-/* Modal */
+/* Modal — frosted glass card */
 .help-modal {
   position: relative;
-  background: rgba(20, 20, 35, 0.75);
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: var(--glass-blur-strong);
   -webkit-backdrop-filter: var(--glass-blur-strong);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--glass-radius-lg);
   width: 460px;
   max-height: 80vh;
@@ -33,22 +34,28 @@
   padding: 24px;
   transform: scale(0.96);
   transition: transform var(--duration-slow) var(--easing);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4),
-              var(--glass-inset);
+  box-shadow: var(--glass-shadow-lg),
+              var(--glass-inset),
+              var(--glass-inset-strong);
   isolation: isolate;
 }
 
-/* Top edge shine */
+/* Glass shine overlay */
 .help-modal::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: var(--glass-edge-light);
+  left: 0;
+  right: 0;
+  height: 60%;
+  border-radius: var(--glass-radius-lg) var(--glass-radius-lg) 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 
 .help-overlay.visible .help-modal {
@@ -65,12 +72,12 @@
 }
 
 .help-modal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 .help-modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Header */
@@ -85,7 +92,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .help-close-btn {
@@ -94,18 +101,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--duration-fast) ease-out;
+  transition: background var(--duration-fast) ease-out,
+              color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out;
+  box-shadow: var(--glass-inset);
+}
+
+.help-close-btn svg {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15));
 }
 
 .help-close-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Section */
@@ -123,7 +137,7 @@
   letter-spacing: 1px;
   color: var(--text-muted);
   margin-bottom: 8px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 /* Shortcut Row */
@@ -141,19 +155,21 @@
   flex-shrink: 0;
 }
 
+/* Kbd — glass keycap */
 .help-keys kbd {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
   padding: 2px 8px;
   font-size: 11px;
   font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
   line-height: 1.4;
   white-space: nowrap;
-  box-shadow: var(--glass-inset),
-              0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25),
+              0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .help-action {

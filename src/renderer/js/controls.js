@@ -82,6 +82,9 @@ class Controls {
       const vol = parseFloat(volumeSlider.value);
       if (vol > 0) this._preMuteVolume = vol;
       window.videoControlAPI.setVolume(vol);
+      this.videoState.volume = vol;
+      if (vol > 0) this.videoState.muted = false;
+      this._updateUI();
     });
     document.getElementById('btn-volume').addEventListener('click', () => {
       const effectivelyMuted = this.videoState.volume < 0.01 || this.videoState.muted;
@@ -89,11 +92,15 @@ class Controls {
         this._preMuteVolume = this.videoState.volume;
         window.videoControlAPI.setVolume(0);
         volumeSlider.value = 0;
+        this.videoState.volume = 0;
       } else {
         const restoreVol = this._preMuteVolume >= 0.01 ? this._preMuteVolume : 1;
         window.videoControlAPI.setVolume(restoreVol);
         volumeSlider.value = restoreVol;
+        this.videoState.volume = restoreVol;
+        this.videoState.muted = false;
       }
+      this._updateUI();
     });
 
     // Video state updates
