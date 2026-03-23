@@ -116,14 +116,14 @@ class Controls {
     // Video state updates
     window.videoControlAPI.onState((state) => {
       // Invalid duration signals a source transition (ad ending, page loading, etc.)
-      // Reset display to 0 instead of showing stale time from the previous source
+      // Reset time display but keep the actual paused state so the icon stays accurate
       if (!isFinite(state.duration) || state.duration <= 0) {
         this._stopSeekAnimation();
         this._optimisticPaused = null;
         this._lastKnownTime = 0;
         this._lastUpdateTs = performance.now();
         this.videoState.duration = 0;
-        this.videoState.paused = true;
+        this.videoState.paused = state.paused !== undefined ? state.paused : true;
         this._updateUI();
         return;
       }
@@ -283,6 +283,11 @@ class Controls {
         lastFrame = now;
         const elapsed = (performance.now() - this._lastUpdateTs) / 1000;
         const duration = this.videoState.duration;
+        // Stop extrapolating if no state callback for 3+ seconds (stale data)
+        if (elapsed > 3) {
+          this._seekAnimId = null;
+          return;
+        }
         const predicted = Math.min(this._lastKnownTime + elapsed, duration);
         if (duration > 0) {
           this._els.seekBar.value = (predicted / duration) * 100;

@@ -545,8 +545,12 @@ function register() {
       }
     }
 
-    // Suppress forwarding during source transitions when duration is invalid
-    if (!isFinite(state.duration) || state.duration <= 0) return;
+    // During source transitions the duration may be invalid (NaN/0).
+    // Still forward the state so the app view can update play/pause icons,
+    // but mark the duration as 0 so the app view resets its time display.
+    if (!isFinite(state.duration) || state.duration <= 0) {
+      state.duration = 0;
+    }
 
     if (appView && !appView.webContents.isDestroyed()) {
       // Strip frame metadata before forwarding — app view doesn't need it
