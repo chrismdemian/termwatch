@@ -55,11 +55,9 @@
   transform: rotate(180deg);
 }
 
-/* Dropdown menu */
+/* Dropdown menu — fixed to viewport to escape overflow:hidden parents */
 .glass-select-menu {
-  position: absolute;
-  left: 0;
-  min-width: 100%;
+  position: fixed;
   padding: 4px;
   background: rgba(20, 20, 35, 0.8);
   backdrop-filter: blur(24px) saturate(200%);
@@ -76,15 +74,9 @@
               transform var(--duration-fast) var(--easing);
 }
 
-.glass-select-menu.open-up {
-  bottom: calc(100% + 6px);
-}
+/* Position is set by JS since menu uses position:fixed */
 
-.glass-select-menu.open-down {
-  top: calc(100% + 6px);
-}
-
-.glass-select.open .glass-select-menu {
+.glass-select-menu.visible {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);

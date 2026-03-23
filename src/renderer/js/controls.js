@@ -48,10 +48,10 @@ class Controls {
       // Optimistic UI: toggle icon immediately instead of waiting for state round-trip.
       // Only apply when a video is loaded (duration > 0) to avoid permanent desync.
       if (this.videoState.duration > 0) {
-        // Use interpolated time (what the user sees) instead of stale state time
+        // Capture predicted time before toggling state
         const predicted = this._getPredictedTime();
         this.videoState.paused = !this.videoState.paused;
-        this.videoState.currentTime = predicted;
+        // Update interpolation anchor to predicted time (don't modify videoState.currentTime)
         this._lastKnownTime = predicted;
         this._lastUpdateTs = performance.now();
         this._updateUI();
@@ -77,6 +77,9 @@ class Controls {
     seekBar.addEventListener('input', () => {
       const time = (seekBar.value / 100) * this.videoState.duration;
       window.videoControlAPI.seek(time);
+      // Update interpolation anchor so bar doesn't snap back while waiting for state callback
+      this._lastKnownTime = time;
+      this._lastUpdateTs = performance.now();
     });
 
     // Volume
@@ -183,20 +186,23 @@ class Controls {
   }
 
   _updateUI() {
-    const { currentTime, duration, paused, volume } = this.videoState;
+    const { duration, paused, volume } = this.videoState;
+    // Use interpolation anchor for display time — it's always the most recent
+    // (updated by state callbacks, seek, and play/pause)
+    const displayTime = this._lastKnownTime;
 
     // Play/pause icons
     document.getElementById('icon-play').classList.toggle('hidden', !paused);
     document.getElementById('icon-pause').classList.toggle('hidden', paused);
 
     // Time
-    document.getElementById('time-current').textContent = this._formatTime(currentTime);
+    document.getElementById('time-current').textContent = this._formatTime(displayTime);
     document.getElementById('time-duration').textContent = this._formatTime(duration);
 
     // Seek bar — only set directly when paused or no animation running
     // (smooth animation handles it during playback)
     if (duration > 0 && (paused || !this._seekAnimId)) {
-      document.getElementById('seek-bar').value = (currentTime / duration) * 100;
+      document.getElementById('seek-bar').value = (displayTime / duration) * 100;
     }
 
     // Volume icon

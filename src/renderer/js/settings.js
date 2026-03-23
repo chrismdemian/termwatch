@@ -671,6 +671,12 @@ class Settings {
 
       row.appendChild(select);
       container.appendChild(row);
+
+      // Upgrade to glass dropdown if GlassSelect is available
+      try {
+        const GlassSelect = require('./glass-select');
+        GlassSelect.upgrade(select);
+      } catch (_) { /* GlassSelect not loaded yet during initial settings.load() */ }
     }
   }
 

@@ -5,21 +5,37 @@
 class GlassSelect {
   static initAll() {
     document.querySelectorAll('select.settings-select, select.layout-select').forEach(select => {
-      new GlassSelect(select);
+      if (!select._glassSelect) new GlassSelect(select);
     });
 
-    // Close all dropdowns on outside click
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.glass-select')) {
-        document.querySelectorAll('.glass-select.open').forEach(el => {
-          el.classList.remove('open');
-        });
-      }
+    // Close all dropdowns on outside click (only attach once)
+    if (!GlassSelect._clickListenerAttached) {
+      GlassSelect._clickListenerAttached = true;
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.glass-select') && !e.target.closest('.glass-select-menu')) {
+          GlassSelect.closeAll();
+        }
+      });
+    }
+  }
+
+  /** Transform a single select element (for dynamically created selects) */
+  static upgrade(select) {
+    if (!select._glassSelect) new GlassSelect(select);
+  }
+
+  static closeAll() {
+    document.querySelectorAll('.glass-select.open').forEach(el => {
+      el.classList.remove('open');
+    });
+    document.querySelectorAll('.glass-select-menu.visible').forEach(el => {
+      el.classList.remove('visible');
     });
   }
 
   constructor(nativeSelect) {
     this._native = nativeSelect;
+    nativeSelect._glassSelect = this;
     this._build();
     this._listen();
   }
@@ -67,7 +83,9 @@ class GlassSelect {
     });
 
     wrapper.appendChild(trigger);
-    wrapper.appendChild(menu);
+
+    // Append menu to body so it escapes overflow:hidden and backdrop-filter containment
+    document.body.appendChild(menu);
 
     // Hide native select and insert custom one
     sel.style.display = 'none';
@@ -84,13 +102,11 @@ class GlassSelect {
     this._trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       const wasOpen = this._wrapper.classList.contains('open');
-      // Close all others first
-      document.querySelectorAll('.glass-select.open').forEach(el => {
-        el.classList.remove('open');
-      });
+      GlassSelect.closeAll();
       if (!wasOpen) {
         this._wrapper.classList.add('open');
         this._positionMenu();
+        this._menu.classList.add('visible');
       }
     });
 
@@ -110,6 +126,7 @@ class GlassSelect {
 
       // Close
       this._wrapper.classList.remove('open');
+      this._menu.classList.remove('visible');
     });
 
     // Sync when native select changes programmatically
@@ -132,17 +149,32 @@ class GlassSelect {
   }
 
   _positionMenu() {
-    // Check if menu would go off screen upward, if so open downward (default is up for controls bar)
-    const rect = this._wrapper.getBoundingClientRect();
-    const menuHeight = this._menu.scrollHeight;
+    const rect = this._trigger.getBoundingClientRect();
+    const menu = this._menu;
+
+    // Temporarily show to measure height
+    menu.style.opacity = '0';
+    menu.style.pointerEvents = 'none';
+    menu.style.display = 'block';
+    const menuHeight = menu.scrollHeight;
+    menu.style.display = '';
+    menu.style.opacity = '';
+    menu.style.pointerEvents = '';
+
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
 
-    this._menu.classList.remove('open-up', 'open-down');
+    menu.style.left = rect.left + 'px';
+    menu.style.minWidth = rect.width + 'px';
+
     if (spaceAbove > menuHeight + 8 || spaceAbove > spaceBelow) {
-      this._menu.classList.add('open-up');
+      // Open upward
+      menu.style.top = '';
+      menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
     } else {
-      this._menu.classList.add('open-down');
+      // Open downward
+      menu.style.bottom = '';
+      menu.style.top = (rect.bottom + 6) + 'px';
     }
   }
 }
