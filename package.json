@@ -22,7 +22,7 @@
   "author": "TermWatch",
   "license": "MIT",
   "dependencies": {
-    "@lydell/node-pty": "1.2.0-beta.3",
+    "@lydell/node-pty": "1.2.0-beta.12",
     "@simonwep/pickr": "1.9.1",
     "@xterm/addon-canvas": "0.7.0",
     "@xterm/addon-clipboard": "0.1.0",
