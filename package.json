@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.3",
-    "@electron/rebuild": "3.7.2",
+    "@electron/rebuild": "4.0.4",
     "@playwright/test": "^1.52.0",
     "electron": "https://github.com/castlabs/electron-releases#v40.7.0+wvcus",
     "electron-builder": "25.1.8",
