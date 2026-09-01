@@ -1,5 +1,7 @@
 # TermWatch — Claude Code Instructions
 
+> Global standards (completion checklist, working standards, frontend toolkit, git rules) are in ~/CLAUDE.md. This file contains TermWatch-specific instructions only.
+
 ## Project Overview
 
 Electron desktop app: transparent terminal panels over a web browser video view. Two WebContentsViews stacked — video (bottom, isolated) and app UI (top, transparent with nodeIntegration).
@@ -23,32 +25,19 @@ Electron desktop app: transparent terminal panels over a web browser video view.
 - CastLabs Electron fork for Widevine DRM
 - User agent strips "Electron/" to avoid bot detection
 
-## MANDATORY Completion Checklist (DO NOT SKIP)
-
-**REQUIRED for every code change — not optional, not "when you have time", not "if it seems important". Every single time.**
-
-Before considering ANY code change done, you MUST complete ALL of these steps in order:
-
-1. **Run `npm run lint`** (0 errors required) and **`npm test`** (all tests must pass)
-2. **Spawn an Opus audit agent** to review all changes for bugs, edge cases, and issues. The agent must classify findings by severity: **Critical** (data loss, crashes, security) — must fix, blocks completion. **Major** (broken functionality, incorrect logic) — should fix. **Minor** (style, naming, small improvements) — fix at your discretion, don't loop on these.
-3. For UI changes, verify with `npm start`
-4. **Commit and push** to the feature branch.
-
-DO NOT mark work as complete if you skipped any step. Be critical but practical — one audit pass with fixes is the standard. Don't loop endlessly polishing.
-
 ## Workflow
 
 ### Making Changes
 1. Create a worktree or feature branch — never commit directly to master
 2. Make changes
-3. Complete the **MANDATORY Completion Checklist** above
-4. Push to feature branch, merge to master, delete the remote branch
+3. Run `npm run lint` (0 errors required) and `npm test` (all tests must pass)
+4. For UI changes, verify with `npm start`
+5. Push to feature branch, merge to master, delete the remote branch
 
 ### Commit Messages
 - Write like a normal open-source project. Never reference phases, sessions, sprints, or planning milestones.
 - Start with a verb: Add, Fix, Update, Remove, Refactor
 - Keep subject under 72 chars
-- No Co-Authored-By lines
 
 ### Releases
 1. `npm run version:bump -- patch` (or minor/major)
